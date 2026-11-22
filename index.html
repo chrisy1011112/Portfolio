@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -60,10 +60,18 @@
         }
         .btn-primary { background: #28a745; }
         .btn-secondary { background: #5865F2; }
+        .btn-link {
+            background: transparent;
+            color: #a29bfe;
+            font-size: 0.86rem;
+            padding: 6px;
+            margin-bottom: 6px;
+            text-decoration: underline;
+        }
         .btn:hover { opacity: 0.92; }
         .explore-link {
             display: block;
-            margin-top: 14px;
+            margin-top: 10px;
             padding: 10px;
             border-radius: 7px;
             background: rgba(255, 255, 255, 0.08);
@@ -81,6 +89,7 @@
             font-size: 0.88rem;
             color: #7bed9f;
             min-height: 1.2em;
+            word-break: break-word;
         }
         #auth-status.error {
             color: #ff7675;
@@ -89,14 +98,28 @@
 </head>
 <body>
     <div class="auth-card">
-        <h1>Portfolio Builder</h1>
-        <p class="subtitle">Sign in or create an account to customize your page.</p>
+        <div id="login-view">
+            <h1>Portfolio Builder</h1>
+            <p class="subtitle">Sign in or create an account to customize your page.</p>
 
-        <input type="email" id="email" placeholder="Email address">
-        <input type="password" id="password" placeholder="Password">
+            <input type="email" id="email" placeholder="Email address" autocomplete="email">
+            <input type="password" id="password" placeholder="Password" autocomplete="current-password">
 
-        <button type="button" class="btn btn-primary" id="login-btn">Log In</button>
-        <button type="button" class="btn btn-secondary" id="signup-btn">Sign Up</button>
+            <button type="button" class="btn btn-primary" id="login-btn">Log In</button>
+            <button type="button" class="btn btn-secondary" id="signup-btn">Sign Up</button>
+            <button type="button" class="btn btn-link" id="forgot-btn">Forgot Password?</button>
+        </div>
+
+        <div id="recovery-view" style="display: none;">
+            <h1>Reset Password</h1>
+            <p class="subtitle">Enter your new password below.</p>
+
+            <input type="password" id="new-password" placeholder="New password (min 6 characters)" autocomplete="new-password">
+            <input type="password" id="confirm-password" placeholder="Confirm new password" autocomplete="new-password">
+
+            <button type="button" class="btn btn-primary" id="update-password-btn">Update Password</button>
+            <button type="button" class="btn btn-link" id="back-to-login-btn">Back to Log In</button>
+        </div>
 
         <a class="explore-link" href="explore.html">Browse Public Portfolios</a>
         <div id="auth-status"></div>
@@ -107,15 +130,48 @@
         const SUPABASE_KEY = 'sb_publishable_QQXGFi2pk743FpoD1D5AlA_X-ZRGoXT';
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+        let isRecoveryMode = false;
+
         function setAuthStatus(msg, isError) {
             const el = document.getElementById('auth-status');
             el.textContent = msg;
             el.className = isError ? 'error' : '';
         }
 
-        async function redirectIfLoggedIn() {
+        function showRecoveryView() {
+            isRecoveryMode = true;
+            document.getElementById('login-view').style.display = 'none';
+            document.getElementById('recovery-view').style.display = 'block';
+            setAuthStatus('Enter your new password to finish resetting.', false);
+        }
+
+        function showLoginView() {
+            isRecoveryMode = false;
+            document.getElementById('recovery-view').style.display = 'none';
+            document.getElementById('login-view').style.display = 'block';
+        }
+
+        function getResetRedirectUrl() {
+            const base = window.location.origin + window.location.pathname;
+            return base.endsWith('/') ? base + 'index.html' : base;
+        }
+
+        supabaseClient.auth.onAuthStateChange(function (event) {
+            if (event === 'PASSWORD_RECOVERY') {
+                showRecoveryView();
+            }
+        });
+
+        async function checkInitialSession() {
+            const hash = window.location.hash || '';
+            const search = window.location.search || '';
+            if (hash.includes('type=recovery') || search.includes('type=recovery')) {
+                showRecoveryView();
+                return;
+            }
+
             const { data: { user } } = await supabaseClient.auth.getUser();
-            if (user) {
+            if (user && !isRecoveryMode) {
                 window.location.href = 'dashboard.html';
             }
         }
@@ -154,7 +210,57 @@
             }
         });
 
-        redirectIfLoggedIn();
+        document.getElementById('forgot-btn').addEventListener('click', async function () {
+            const email = document.getElementById('email').value.trim();
+            if (!email) {
+                setAuthStatus('Type your email address above first, then click Forgot Password.', true);
+                return;
+            }
+
+            setAuthStatus('Sending reset email...', false);
+            const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
+                redirectTo: getResetRedirectUrl()
+            });
+
+            if (error) {
+                setAuthStatus(error.message, true);
+            } else {
+                setAuthStatus('Password reset email sent to ' + email + '. Check your inbox (and spam folder).', false);
+            }
+        });
+
+        document.getElementById('update-password-btn').addEventListener('click', async function () {
+            const newPassword = document.getElementById('new-password').value;
+            const confirmPassword = document.getElementById('confirm-password').value;
+
+            if (!newPassword || newPassword.length < 6) {
+                setAuthStatus('New password must be at least 6 characters.', true);
+                return;
+            }
+            if (newPassword !== confirmPassword) {
+                setAuthStatus('Passwords do not match.', true);
+                return;
+            }
+
+            setAuthStatus('Updating password...', false);
+            const { error } = await supabaseClient.auth.updateUser({ password: newPassword });
+
+            if (error) {
+                setAuthStatus(error.message, true);
+            } else {
+                setAuthStatus('Password updated! Redirecting to dashboard...', false);
+                setTimeout(function () {
+                    window.location.href = 'dashboard.html';
+                }, 900);
+            }
+        });
+
+        document.getElementById('back-to-login-btn').addEventListener('click', function () {
+            showLoginView();
+            setAuthStatus('', false);
+        });
+
+        checkInitialSession();
     </script>
 </body>
 </html>
