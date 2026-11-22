@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -328,7 +328,7 @@
                 return;
             }
 
-            document.title = data.username + ' — Portfolio';
+            document.title = (data.username || 'Portfolio') + ' — Portfolio';
 
             const hasAnyTag = Array.isArray(data.badges) && data.badges.length > 0;
 
@@ -350,12 +350,12 @@
             applyAnimatedOrStaticBackground(data.background_url, data.background_type);
 
             const pfpHtml = data.avatar_url
-                ? '<img class="pfp" src="' + escapeHtml(data.avatar_url) + '" alt="' + escapeHtml(data.username) + '">'
+                ? '<img class="pfp" src="' + escapeHtml(data.avatar_url) + '" alt="' + escapeHtml(data.username || '') + '" onerror="this.style.display=\'none\'">'
                 : '';
 
             document.getElementById('section-bio').innerHTML =
                 pfpHtml +
-                '<h1 style="margin-bottom: 4px;">' + escapeHtml(data.username) + '</h1>' +
+                '<h1 style="margin-bottom: 4px;">' + escapeHtml(data.username || 'User') + '</h1>' +
                 renderBadges(data.badges) +
                 '<p>' + escapeHtml(data.bio || '') + '</p>';
 
@@ -397,7 +397,7 @@
                     const embedUrl = toEmbedMusicUrl(cleanMusic);
                     document.getElementById('section-music').innerHTML =
                         '<h3>Listen</h3>' +
-                        '<iframe src="' + escapeHtml(embedUrl) + '" width="100%" height="80" frameborder="0" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy" style="border-radius: 10px;"></iframe>';
+                        '<iframe src="' + escapeHtml(embedUrl) + '" width="100%" height="152" frameborder="0" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy" style="border-radius: 10px;"></iframe>';
                 }
             }
 
@@ -410,9 +410,11 @@
 
             container.innerHTML = '';
 
-            const order = Array.isArray(data.layout_order) ? data.layout_order : ['bio', 'links', 'projects', 'music'];
+            const rawOrder = Array.isArray(data.layout_order) && data.layout_order.length > 0
+                ? data.layout_order
+                : ['bio', 'links', 'projects', 'music'];
 
-            order.forEach(function (sectionId) {
+            rawOrder.forEach(function (sectionId) {
                 const el = sections[sectionId];
                 if (!el) return;
                 if (sectionId === 'music' && !data.music_url) return;
