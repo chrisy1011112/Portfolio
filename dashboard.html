@@ -16,7 +16,7 @@
             margin: 0;
         }
         .container {
-            max-width: 600px;
+            max-width: 640px;
             margin: 20px auto;
             background: #333;
             padding: 25px;
@@ -51,15 +51,9 @@
             border: none;
             cursor: pointer;
         }
-        .view-link.secondary {
-            background: #555;
-        }
-        .view-link.admin {
-            background: #c0392b;
-        }
-        .view-link:hover {
-            opacity: 0.9;
-        }
+        .view-link.secondary { background: #555; }
+        .view-link.admin { background: #c0392b; }
+        .view-link:hover { opacity: 0.9; }
         .badges-bar {
             display: flex;
             flex-wrap: wrap;
@@ -101,7 +95,7 @@
             display: block;
             margin-top: 2px;
         }
-        input, textarea {
+        input, textarea, select {
             width: 100%;
             padding: 10px;
             margin-top: 6px;
@@ -131,6 +125,34 @@
             background: #444;
             color: white;
             padding: 8px;
+        }
+        .status-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 6px;
+        }
+        .status-row input[type="text"] {
+            margin-top: 0;
+            flex: 1;
+        }
+        .status-row input[type="color"] {
+            margin-top: 0;
+        }
+        .skills-chips-preview {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 8px;
+        }
+        .skill-chip {
+            background: rgba(116, 185, 255, 0.16);
+            border: 1px solid rgba(116, 185, 255, 0.4);
+            color: #bfe3ff;
+            padding: 3px 10px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: bold;
         }
         .mode-toggle {
             display: inline-flex;
@@ -201,9 +223,7 @@
             text-shadow: 0 1px 3px rgba(0, 0, 0, 0.75);
             transition: transform 0.12s ease, border-color 0.15s ease;
         }
-        .bg-preset-btn:hover {
-            transform: translateY(-1px);
-        }
+        .bg-preset-btn:hover { transform: translateY(-1px); }
         .bg-preset-btn.active {
             border-color: #74b9ff;
             box-shadow: 0 0 0 2px rgba(116, 185, 255, 0.35);
@@ -227,6 +247,30 @@
         .link-row input {
             margin-top: 0;
             flex: 1;
+        }
+        .project-editor-card {
+            background: #2a2a31;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 10px;
+        }
+        .project-top-row {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        .project-top-row input {
+            margin-top: 0;
+            flex: 2;
+        }
+        .project-top-row select {
+            margin-top: 0;
+            flex: 1;
+        }
+        .project-editor-card textarea {
+            min-height: 64px;
+            resize: vertical;
         }
         .btn-small {
             margin-top: 8px;
@@ -275,9 +319,7 @@
             justify-content: space-between;
             gap: 10px;
         }
-        .drag-item:active {
-            cursor: grabbing;
-        }
+        .drag-item:active { cursor: grabbing; }
         .drag-left {
             display: flex;
             align-items: center;
@@ -297,12 +339,8 @@
             font-weight: bold;
             color: white;
         }
-        .section-remove-btn {
-            background: #c0392b;
-        }
-        .section-add-btn {
-            background: #28a745;
-        }
+        .section-remove-btn { background: #c0392b; }
+        .section-add-btn { background: #28a745; }
         .available-list {
             display: flex;
             flex-wrap: wrap;
@@ -347,12 +385,46 @@
             min-height: 20px;
             word-break: break-word;
         }
-        #status-msg.error {
-            color: #ff7675;
+        #status-msg.error { color: #ff7675; }
+
+        .toast-stack {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-width: 340px;
+            pointer-events: none;
+        }
+        .toast-banner {
+            background: #18181f;
+            color: #f8fafc;
+            border: 1px solid rgba(116, 185, 255, 0.45);
+            border-left: 4px solid #2ecc71;
+            padding: 12px 16px;
+            border-radius: 8px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.45);
+            font-size: 13px;
+            line-height: 1.4;
+            opacity: 0;
+            transform: translateX(28px);
+            transition: opacity 0.22s ease, transform 0.22s ease;
+        }
+        .toast-banner.show {
+            opacity: 1;
+            transform: translateX(0);
+        }
+        .toast-banner.error {
+            border-left-color: #ff7675;
+            border-color: rgba(255, 118, 117, 0.45);
         }
     </style>
 </head>
 <body>
+    <div class="toast-stack" id="toast-stack" aria-live="polite"></div>
+
     <div class="container">
         <div class="top-actions">
             <h1>Edit Portfolio</h1>
@@ -376,6 +448,22 @@
             <input type="checkbox" id="is-public" checked>
             <span>List my profile in the public Explore directory</span>
         </label>
+
+        <label class="field-label" for="status-text">
+            Live Status / "Currently" Pill:
+            <span class="hint">Optional — e.g. Building in Roblox Studio, Coding a Discord bot</span>
+        </label>
+        <div class="status-row">
+            <input type="text" id="status-text" maxlength="60" placeholder="Building in Roblox Studio">
+            <input type="color" id="status-color" value="#2ecc71" title="Status indicator color">
+        </div>
+
+        <label class="field-label" for="skills-input">
+            Skills &amp; Tools Chips:
+            <span class="hint">Separate with commas — e.g. Luau, Python, HTML/CSS, Discord.py</span>
+        </label>
+        <input type="text" id="skills-input" placeholder="Luau, Python, HTML/CSS, Discord.py">
+        <div class="skills-chips-preview" id="skills-preview"></div>
 
         <span class="field-label">
             Profile Picture (Image or Text):
@@ -401,8 +489,11 @@
             <span style="font-size: 13px; color: #ccc;">Current / selected PFP</span>
         </div>
 
-        <label class="field-label" for="bio">Bio:</label>
-        <textarea id="bio" rows="3" placeholder="Tell people a bit about yourself..."></textarea>
+        <label class="field-label" for="bio">
+            Bio (Markdown Supported):
+            <span class="hint">Supports **bold**, *italic*, `code`, and [link text](https://example.com) safely</span>
+        </label>
+        <textarea id="bio" rows="4" placeholder="I build **Roblox** systems and `discord.py` bots. Check my [GitHub](https://github.com)."></textarea>
 
         <label class="field-label" for="discord-url">
             Discord Link (Invite or Profile URL):
@@ -419,6 +510,13 @@
         <span class="field-label">Social &amp; Custom Links:</span>
         <div id="links-container"></div>
         <button type="button" class="btn-small" id="add-link-btn">+ Add Link</button>
+
+        <span class="field-label">
+            Projects:
+            <span class="hint">Add project cards with a title, status badge, description, and optional link</span>
+        </span>
+        <div id="projects-container"></div>
+        <button type="button" class="btn-small" id="add-project-btn">+ Add Project</button>
 
         <label class="field-label" for="bg-upload">
             Background (No Background, Gradient Preset, or Upload):
@@ -484,7 +582,7 @@
         let currentUser = null;
         let userBadges = [];
         let savedAvatarUrl = null;
-        let pfpMode = 'image'; // 'image' | 'text'
+        let pfpMode = 'image';
 
         const GRADIENT_PRESETS = {
             midnight: {
@@ -518,7 +616,7 @@
         const SECTION_LABELS = {
             bio: 'Bio & PFP Section',
             links: 'Discord & Links Section',
-            projects: 'Projects Section (Coming Soon)',
+            projects: 'Projects Section',
             music: 'Music Player'
         };
         const ALL_SECTION_IDS = Object.keys(SECTION_LABELS);
@@ -530,6 +628,130 @@
             verified: 'badge-verified',
             friend: 'badge-friend'
         };
+
+        function showToast(message, isError) {
+            const stack = document.getElementById('toast-stack');
+            const toast = document.createElement('div');
+            toast.className = 'toast-banner' + (isError ? ' error' : '');
+            toast.textContent = message;
+            stack.appendChild(toast);
+
+            requestAnimationFrame(function () {
+                toast.classList.add('show');
+            });
+
+            setTimeout(function () {
+                toast.classList.remove('show');
+                setTimeout(function () {
+                    toast.remove();
+                }, 240);
+            }, 3200);
+        }
+
+        function parseSkillsInput(raw) {
+            return String(raw || '')
+                .split(',')
+                .map(function (s) { return s.trim(); })
+                .filter(Boolean)
+                .slice(0, 20);
+        }
+
+        function renderSkillsPreview() {
+            const preview = document.getElementById('skills-preview');
+            const skills = parseSkillsInput(document.getElementById('skills-input').value);
+            preview.innerHTML = '';
+            skills.forEach(function (skill) {
+                const chip = document.createElement('span');
+                chip.className = 'skill-chip';
+                chip.textContent = skill;
+                preview.appendChild(chip);
+            });
+        }
+
+        document.getElementById('skills-input').addEventListener('input', renderSkillsPreview);
+
+        function addProjectCard(project) {
+            const data = project || {};
+            const container = document.getElementById('projects-container');
+            const card = document.createElement('div');
+            card.className = 'project-editor-card';
+
+            const topRow = document.createElement('div');
+            topRow.className = 'project-top-row';
+
+            const titleInput = document.createElement('input');
+            titleInput.type = 'text';
+            titleInput.className = 'proj-title';
+            titleInput.placeholder = 'Project title (e.g. Theme Park Hub)';
+            titleInput.value = data.title || '';
+
+            const statusSelect = document.createElement('select');
+            statusSelect.className = 'proj-status';
+            ['Live', 'In Progress', 'WIP', 'Archived'].forEach(function (opt) {
+                const option = document.createElement('option');
+                option.value = opt;
+                option.textContent = opt;
+                if ((data.status || 'Live') === opt) option.selected = true;
+                statusSelect.appendChild(option);
+            });
+
+            topRow.appendChild(titleInput);
+            topRow.appendChild(statusSelect);
+
+            const descInput = document.createElement('textarea');
+            descInput.className = 'proj-desc';
+            descInput.placeholder = 'Short description (supports **bold**, *italic*, `code`, [links](url))';
+            descInput.value = data.description || '';
+
+            const bottomRow = document.createElement('div');
+            bottomRow.className = 'link-row';
+
+            const urlInput = document.createElement('input');
+            urlInput.type = 'text';
+            urlInput.className = 'proj-url';
+            urlInput.placeholder = 'Project URL (optional — https://...)';
+            urlInput.value = data.url || '';
+
+            const removeBtn = document.createElement('button');
+            removeBtn.type = 'button';
+            removeBtn.className = 'btn-remove';
+            removeBtn.textContent = 'Remove';
+            removeBtn.addEventListener('click', function () {
+                card.remove();
+            });
+
+            bottomRow.appendChild(urlInput);
+            bottomRow.appendChild(removeBtn);
+
+            card.appendChild(topRow);
+            card.appendChild(descInput);
+            card.appendChild(bottomRow);
+            container.appendChild(card);
+        }
+
+        function getProjectsData() {
+            const cards = document.querySelectorAll('#projects-container .project-editor-card');
+            const projects = [];
+            cards.forEach(function (card) {
+                const title = card.querySelector('.proj-title').value.trim();
+                const status = card.querySelector('.proj-status').value || 'Live';
+                const description = card.querySelector('.proj-desc').value.trim();
+                const url = card.querySelector('.proj-url').value.trim();
+                if (title || description || url) {
+                    projects.push({
+                        title: title || 'Untitled Project',
+                        status: status,
+                        description: description,
+                        url: url
+                    });
+                }
+            });
+            return projects;
+        }
+
+        document.getElementById('add-project-btn').addEventListener('click', function () {
+            addProjectCard({});
+        });
 
         function getFallbackPfpText() {
             const custom = document.getElementById('pfp-text-input').value.trim();
@@ -819,6 +1041,7 @@
         document.getElementById('clear-html-btn').addEventListener('click', function () {
             document.getElementById('custom-html-code').value = '';
             setStatus('Custom HTML cleared in editor. Click "Save Changes" to apply.', false);
+            showToast('Custom HTML cleared in editor.', false);
         });
 
         document.getElementById('copy-share-btn').addEventListener('click', async function () {
@@ -828,8 +1051,10 @@
             try {
                 await navigator.clipboard.writeText(fullUrl);
                 setStatus('Copied share link: ' + fullUrl, false);
+                showToast('Copied portfolio link to clipboard!', false);
             } catch (err) {
                 setStatus('Share link: ' + fullUrl, false);
+                showToast('Share link: ' + fullUrl, false);
             }
         });
 
@@ -901,18 +1126,37 @@
 
             if (error) {
                 setStatus('Error loading profile: ' + error.message, true);
+                showToast('Error loading profile: ' + error.message, true);
             }
+
+            const projectsContainer = document.getElementById('projects-container');
+            projectsContainer.innerHTML = '';
 
             if (data) {
                 document.getElementById('username').value = data.username || '';
                 updatePortfolioLink(data.username || '');
                 document.getElementById('is-public').checked = data.is_public !== false;
+                document.getElementById('status-text').value = data.status_text || '';
+                document.getElementById('status-color').value = /^#[0-9a-fA-F]{6}$/.test(data.status_color || '')
+                    ? data.status_color
+                    : '#2ecc71';
+                document.getElementById('skills-input').value = Array.isArray(data.skills)
+                    ? data.skills.join(', ')
+                    : (data.skills || '');
+                renderSkillsPreview();
+
                 document.getElementById('bio').value = data.bio || '';
                 document.getElementById('discord-url').value = data.discord_url || '';
                 document.getElementById('discord-handle').value = data.discord_handle || '';
                 document.getElementById('music').value = data.music_url || '';
                 document.getElementById('custom-html-code').value = data.custom_html || '';
                 document.getElementById('vip-glow').checked = Boolean(data.vip_glow);
+
+                if (Array.isArray(data.projects) && data.projects.length > 0) {
+                    data.projects.forEach(function (proj) {
+                        addProjectCard(proj);
+                    });
+                }
 
                 if (data.background_type === 'gradient' || (data.background_url && String(data.background_url).startsWith('gradient:'))) {
                     selectedBgChoice = {
@@ -966,6 +1210,7 @@
                 applyTagUI([]);
                 addLinkRow('', '');
                 renderSectionLists(ALL_SECTION_IDS);
+                renderSkillsPreview();
                 updatePfpPreviewUI();
             }
         }
@@ -977,10 +1222,14 @@
 
             const username = document.getElementById('username').value.trim();
             const isPublic = document.getElementById('is-public').checked;
+            const statusText = document.getElementById('status-text').value.trim() || null;
+            const statusColor = document.getElementById('status-color').value || '#2ecc71';
+            const skills = parseSkillsInput(document.getElementById('skills-input').value);
             const bio = document.getElementById('bio').value;
             const discordUrl = document.getElementById('discord-url').value.trim() || null;
             const discordHandle = document.getElementById('discord-handle').value.trim() || null;
             const links = getLinksData();
+            const projects = getProjectsData();
             let music = document.getElementById('music').value.trim() || null;
             const layoutOrder = getLayoutOrder();
 
@@ -1003,7 +1252,8 @@
             if (!username) {
                 saveBtn.disabled = false;
                 setStatus('Please enter a username before saving.', true);
-                return alert('Please enter a username.');
+                showToast('Please enter a username before saving.', true);
+                return;
             }
 
             if (pfpMode === 'text') {
@@ -1014,7 +1264,8 @@
             } else if (pfpFile) {
                 if (!pfpFile.type.startsWith('image/')) {
                     saveBtn.disabled = false;
-                    return alert('Please select a valid image file for your profile picture.');
+                    showToast('Please select a valid image file for your profile picture.', true);
+                    return;
                 }
                 const fileExt = (pfpFile.name.split('.').pop() || 'png').toLowerCase();
                 const filePath = currentUser.id + '/avatar.' + fileExt;
@@ -1025,7 +1276,8 @@
                 if (error) {
                     saveBtn.disabled = false;
                     setStatus('PFP Upload failed: ' + error.message, true);
-                    return alert('PFP Upload failed: ' + error.message);
+                    showToast('PFP Upload failed: ' + error.message, true);
+                    return;
                 }
                 avatarUrl = supabaseClient.storage.from('avatars').getPublicUrl(filePath).data.publicUrl + '?t=' + Date.now();
                 savedAvatarUrl = avatarUrl;
@@ -1037,7 +1289,8 @@
                 const isVideo = bgFile.type.startsWith('video/');
                 if (!isImage && !isVideo) {
                     saveBtn.disabled = false;
-                    return alert('Please select a valid image or video for your background.');
+                    showToast('Please select a valid image or video for your background.', true);
+                    return;
                 }
                 bgType = isVideo ? 'video' : 'image';
                 const fileExt = (bgFile.name.split('.').pop() || (isVideo ? 'mp4' : 'png')).toLowerCase();
@@ -1049,7 +1302,8 @@
                 if (error) {
                     saveBtn.disabled = false;
                     setStatus('Background Upload failed: ' + error.message, true);
-                    return alert('Background Upload failed: ' + error.message);
+                    showToast('Background Upload failed: ' + error.message, true);
+                    return;
                 }
                 bgUrl = supabaseClient.storage.from('backgrounds').getPublicUrl(filePath).data.publicUrl + '?t=' + Date.now();
             } else if (selectedBgChoice.mode === 'gradient') {
@@ -1063,7 +1317,8 @@
             if (musicFile) {
                 if (!musicFile.type.startsWith('audio/')) {
                     saveBtn.disabled = false;
-                    return alert('Please select a valid audio file.');
+                    showToast('Please select a valid audio file.', true);
+                    return;
                 }
                 const fileExt = (musicFile.name.split('.').pop() || 'mp3').toLowerCase();
                 const filePath = currentUser.id + '/track.' + fileExt;
@@ -1074,7 +1329,8 @@
                 if (error) {
                     saveBtn.disabled = false;
                     setStatus('Music Upload failed: ' + error.message, true);
-                    return alert('Music Upload failed: ' + error.message);
+                    showToast('Music Upload failed: ' + error.message, true);
+                    return;
                 }
                 music = supabaseClient.storage.from('music').getPublicUrl(filePath).data.publicUrl + '?t=' + Date.now();
                 document.getElementById('music').value = music;
@@ -1084,10 +1340,14 @@
                 id: currentUser.id,
                 username: username,
                 is_public: isPublic,
+                status_text: statusText,
+                status_color: statusColor,
+                skills: skills,
                 bio: bio,
                 discord_url: discordUrl,
                 discord_handle: discordHandle,
                 links: links,
+                projects: projects,
                 music_url: music,
                 layout_order: layoutOrder,
                 custom_html: customHtml,
@@ -1103,11 +1363,11 @@
 
             if (error) {
                 setStatus('Database error: ' + error.message, true);
-                alert('Database error: ' + error.message);
+                showToast('Database error: ' + error.message, true);
             } else {
                 updatePortfolioLink(username);
                 setStatus('Saved successfully!', false);
-                alert('Saved successfully!');
+                showToast('Portfolio changes saved!', false);
             }
         }
 
