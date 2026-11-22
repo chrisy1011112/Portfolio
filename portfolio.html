@@ -72,7 +72,7 @@
             backdrop-filter: blur(8px);
             padding: 40px;
             border-radius: 15px;
-            max-width: 600px;
+            max-width: 640px;
             margin: 80px auto;
             display: flex;
             flex-direction: column;
@@ -121,6 +121,26 @@
             box-sizing: border-box;
         }
 
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 5px 12px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            font-size: 0.82rem;
+            color: #e2e8f0;
+            margin: 4px auto 10px auto;
+        }
+
+        .status-dot {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
         .badges-row {
             display: flex;
             flex-wrap: wrap;
@@ -146,6 +166,40 @@
         .badge-verified { background: rgba(52, 152, 219, 0.22); color: #74b9ff; border: 1px solid rgba(52, 152, 219, 0.55); }
         .badge-friend { background: rgba(46, 204, 113, 0.22); color: #55efc4; border: 1px solid rgba(46, 204, 113, 0.55); }
         .badge-default { background: rgba(255, 255, 255, 0.15); color: #fff; border: 1px solid rgba(255, 255, 255, 0.3); }
+
+        .md-body {
+            line-height: 1.55;
+            color: #e5e7eb;
+        }
+        .md-body code {
+            background: rgba(255, 255, 255, 0.14);
+            padding: 2px 6px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 0.9em;
+            color: #93c5fd;
+        }
+        .md-body a {
+            color: #74b9ff;
+            text-decoration: underline;
+        }
+
+        .skills-row {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 7px;
+            margin-top: 12px;
+        }
+        .skill-chip {
+            padding: 4px 11px;
+            border-radius: 999px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            background: rgba(116, 185, 255, 0.14);
+            color: #bae6fd;
+            border: 1px solid rgba(116, 185, 255, 0.32);
+        }
 
         .links-list {
             display: flex;
@@ -184,11 +238,92 @@
             background: rgba(88, 101, 242, 0.55);
         }
 
+        .projects-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+            margin-top: 12px;
+            text-align: left;
+        }
+
+        .project-card {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            border-radius: 10px;
+            padding: 14px 16px;
+        }
+
+        .project-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 6px;
+        }
+
+        .project-title {
+            margin: 0;
+            font-size: 1rem;
+            font-weight: bold;
+            color: #fff;
+        }
+
+        .project-status {
+            font-size: 0.72rem;
+            font-weight: bold;
+            padding: 3px 9px;
+            border-radius: 999px;
+            background: rgba(46, 204, 113, 0.18);
+            color: #55efc4;
+            border: 1px solid rgba(46, 204, 113, 0.45);
+            white-space: nowrap;
+        }
+
+        .project-link {
+            display: inline-block;
+            margin-top: 8px;
+            font-size: 0.85rem;
+            color: #74b9ff;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .project-link:hover { text-decoration: underline; }
+
         .toast {
             font-size: 0.85rem;
             color: #a5f3fc;
             margin-top: 8px;
             min-height: 1.2em;
+        }
+
+        .toast-stack {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-width: 340px;
+            pointer-events: none;
+        }
+        .toast-banner {
+            background: #18181f;
+            color: #f8fafc;
+            border: 1px solid rgba(116, 185, 255, 0.45);
+            border-left: 4px solid #2ecc71;
+            padding: 12px 16px;
+            border-radius: 8px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.45);
+            font-size: 13px;
+            text-align: left;
+            opacity: 0;
+            transform: translateX(28px);
+            transition: opacity 0.22s ease, transform 0.22s ease;
+        }
+        .toast-banner.show {
+            opacity: 1;
+            transform: translateX(0);
         }
 
         audio.inline-audio {
@@ -211,6 +346,8 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
+    <div class="toast-stack" id="toast-stack" aria-live="polite"></div>
+
     <div class="top-nav">
         <a href="explore.html">Explore</a>
         <a href="dashboard.html">Dashboard</a>
@@ -219,7 +356,7 @@
     <div class="container" id="portfolio-container">
         <div id="section-bio" class="section" style="display: none;"></div>
         <div id="section-links" class="section" style="display: none;"></div>
-        <div id="section-projects" class="section" style="display: none;"><p><em>(Projects coming soon)</em></p></div>
+        <div id="section-projects" class="section" style="display: none;"></div>
         <div id="section-music" class="section" style="display: none;"></div>
     </div>
 
@@ -244,9 +381,29 @@
             friend: { label: 'Friend', cls: 'badge-friend' }
         };
 
+        function showToast(message) {
+            const stack = document.getElementById('toast-stack');
+            const toast = document.createElement('div');
+            toast.className = 'toast-banner';
+            toast.textContent = message;
+            stack.appendChild(toast);
+
+            requestAnimationFrame(function () {
+                toast.classList.add('show');
+            });
+
+            setTimeout(function () {
+                toast.classList.remove('show');
+                setTimeout(function () {
+                    toast.remove();
+                }, 240);
+            }, 2800);
+        }
+
         function sanitizeUrl(url) {
             if (!url) return '';
             const trimmed = url.trim();
+            if (/^(javascript|data|vbscript):/i.test(trimmed)) return '';
             if (/^https?:\/\//i.test(trimmed)) return trimmed;
             return 'https://' + trimmed;
         }
@@ -257,6 +414,37 @@
                 .replace(/</g, '&lt;')
                 .replace(/>/g, '&gt;')
                 .replace(/"/g, '&quot;');
+        }
+
+        // Safely parses inline Markdown (**bold**, *italic*, `code`, [label](url)) on escaped text
+        function renderSafeMarkdown(rawText) {
+            const text = String(rawText ?? '').trim();
+            if (!text) return '';
+
+            const codeTokens = [];
+            const withCodePlaceholders = text.replace(/`([^`\n]+)`/g, function (_, codeSnippet) {
+                const idx = codeTokens.length;
+                codeTokens.push('<code>' + escapeHtml(codeSnippet) + '</code>');
+                return '@@CODE_' + idx + '@@';
+            });
+
+            let escaped = escapeHtml(withCodePlaceholders);
+
+            escaped = escaped.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, function (_, label, rawUrl) {
+                const safeHref = sanitizeUrl(rawUrl);
+                if (!safeHref) return label;
+                return '<a href="' + escapeHtml(safeHref) + '" target="_blank" rel="noopener noreferrer">' + label + '</a>';
+            });
+
+            escaped = escaped.replace(/\*\*([^*\n]+)\*\*/g, '<strong>$1</strong>');
+            escaped = escaped.replace(/\*([^*\n]+)\*/g, '<em>$1</em>');
+            escaped = escaped.replace(/\n/g, '<br>');
+
+            escaped = escaped.replace(/@@CODE_(\d+)@@/g, function (_, i) {
+                return codeTokens[Number(i)] || '';
+            });
+
+            return escaped;
         }
 
         function renderPfpHtml(profile) {
@@ -271,6 +459,55 @@
                 return '<img class="pfp" src="' + escapeHtml(raw) + '" alt="' + escapeHtml(profile.username || '') + '" onerror="this.style.display=\'none\'">';
             }
             return '';
+        }
+
+        function renderStatusPill(profile) {
+            const statusText = String(profile.status_text || '').trim();
+            if (!statusText) return '';
+            const dotColor = /^#[0-9a-fA-F]{6}$/.test(profile.status_color || '') ? profile.status_color : '#2ecc71';
+            return (
+                '<div><span class="status-pill">' +
+                '<span class="status-dot" style="background:' + escapeHtml(dotColor) + ';box-shadow:0 0 8px ' + escapeHtml(dotColor) + ';"></span>' +
+                '<span>' + escapeHtml(statusText) + '</span>' +
+                '</span></div>'
+            );
+        }
+
+        function renderSkillsChips(skills) {
+            if (!Array.isArray(skills) || skills.length === 0) return '';
+            const cleanSkills = skills.map(function (s) { return String(s).trim(); }).filter(Boolean);
+            if (cleanSkills.length === 0) return '';
+            return '<div class="skills-row">' + cleanSkills.map(function (s) {
+                return '<span class="skill-chip">' + escapeHtml(s) + '</span>';
+            }).join('') + '</div>';
+        }
+
+        function renderProjectsSection(projects) {
+            if (!Array.isArray(projects) || projects.length === 0) {
+                return '<p><em>(Projects coming soon)</em></p>';
+            }
+            const cardsHtml = projects.map(function (proj) {
+                const title = escapeHtml(proj.title || 'Untitled Project');
+                const status = escapeHtml(proj.status || 'Live');
+                const descHtml = renderSafeMarkdown(proj.description || '');
+                const safeUrl = sanitizeUrl(proj.url || '');
+                const linkHtml = safeUrl
+                    ? '<a class="project-link" href="' + escapeHtml(safeUrl) + '" target="_blank" rel="noopener noreferrer">View Project -></a>'
+                    : '';
+
+                return (
+                    '<div class="project-card">' +
+                    '<div class="project-header">' +
+                    '<h4 class="project-title">' + title + '</h4>' +
+                    '<span class="project-status">' + status + '</span>' +
+                    '</div>' +
+                    (descHtml ? '<div class="md-body">' + descHtml + '</div>' : '') +
+                    linkHtml +
+                    '</div>'
+                );
+            }).join('');
+
+            return '<h3>Projects</h3><div class="projects-grid">' + cardsHtml + '</div>';
         }
 
         function toEmbedMusicUrl(rawUrl) {
@@ -398,11 +635,14 @@
 
             applyBackground(data.background_url, data.background_type);
 
+            const bioHtml = renderSafeMarkdown(data.bio || '');
             document.getElementById('section-bio').innerHTML =
                 renderPfpHtml(data) +
-                '<h1 style="margin-bottom: 4px;">' + escapeHtml(data.username || 'User') + '</h1>' +
+                '<h1 style="margin-bottom: 6px;">' + escapeHtml(data.username || 'User') + '</h1>' +
+                renderStatusPill(data) +
                 renderBadges(data.badges) +
-                '<p>' + escapeHtml(data.bio || '') + '</p>';
+                (bioHtml ? '<div class="md-body">' + bioHtml + '</div>' : '') +
+                renderSkillsChips(data.skills);
 
             const linksSection = document.getElementById('section-links');
             let buttonsHtml = '';
@@ -418,9 +658,11 @@
             if (Array.isArray(data.links)) {
                 data.links.forEach(function (item) {
                     if (item && item.url) {
+                        const safeHref = sanitizeUrl(item.url);
+                        if (!safeHref) return;
                         const label = item.label || item.url;
                         buttonsHtml +=
-                            '<a class="link-btn" href="' + escapeHtml(sanitizeUrl(item.url)) + '" target="_blank" rel="noopener noreferrer">' + escapeHtml(label) + '</a>';
+                            '<a class="link-btn" href="' + escapeHtml(safeHref) + '" target="_blank" rel="noopener noreferrer">' + escapeHtml(label) + '</a>';
                     }
                 });
             }
@@ -432,13 +674,15 @@
                     '<div class="toast" id="copy-toast"></div>';
             }
 
+            document.getElementById('section-projects').innerHTML = renderProjectsSection(data.projects);
+
             if (data.music_url) {
                 const cleanMusic = sanitizeUrl(data.music_url);
-                if (isDirectAudioFile(cleanMusic)) {
+                if (cleanMusic && isDirectAudioFile(cleanMusic)) {
                     document.getElementById('section-music').innerHTML =
                         '<h3>Listen</h3>' +
                         '<audio class="inline-audio" controls preload="metadata" src="' + escapeHtml(cleanMusic) + '"></audio>';
-                } else {
+                } else if (cleanMusic) {
                     const embedUrl = toEmbedMusicUrl(cleanMusic);
                     document.getElementById('section-music').innerHTML =
                         '<h3>Listen</h3>' +
@@ -477,8 +721,10 @@
                     try {
                         await navigator.clipboard.writeText(handle);
                         if (toast) toast.textContent = 'Copied "' + handle + '" to clipboard!';
+                        showToast('Copied Discord handle: ' + handle);
                     } catch (err) {
                         if (toast) toast.textContent = 'Discord: ' + handle;
+                        showToast('Discord: ' + handle);
                     }
                 });
             }
