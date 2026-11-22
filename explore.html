@@ -9,225 +9,288 @@
     <style>
         * { box-sizing: border-box; }
         body {
+            font-family: sans-serif;
+            background: #141418;
+            color: #f8fafc;
             margin: 0;
             padding: 24px;
-            min-height: 100vh;
-            font-family: sans-serif;
-            background: #16161a;
-            color: white;
         }
-
+        .page-wrap {
+            max-width: 980px;
+            margin: 0 auto;
+        }
         .top-bar {
-            max-width: 960px;
-            margin: 0 auto 24px auto;
             display: flex;
             flex-wrap: wrap;
             justify-content: space-between;
             align-items: center;
             gap: 12px;
+            margin-bottom: 20px;
         }
-
-        .top-bar h1 {
+        h1 {
             margin: 0;
-            font-size: 1.7rem;
+            font-size: 1.75rem;
         }
-
+        .subtitle {
+            margin: 4px 0 0 0;
+            color: #94a3b8;
+            font-size: 0.92rem;
+        }
         .nav-links {
             display: flex;
             gap: 10px;
         }
-
         .nav-btn {
-            padding: 9px 15px;
+            padding: 9px 14px;
             border-radius: 8px;
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
             text-decoration: none;
-            font-size: 0.9rem;
+            font-size: 0.88rem;
             font-weight: bold;
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            transition: background 0.2s ease;
+            color: white;
+            background: #272732;
+            border: 1px solid rgba(255, 255, 255, 0.14);
         }
-
-        .nav-btn:hover {
-            background: rgba(255, 255, 255, 0.2);
-        }
-
         .nav-btn.primary {
             background: #28a745;
-            border-color: #28a745;
+            border-color: transparent;
         }
+        .nav-btn:hover { opacity: 0.92; }
 
-        .controls {
-            max-width: 960px;
-            margin: 0 auto 24px auto;
+        .controls-panel {
+            background: #1e1e26;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 22px;
             display: flex;
-            flex-wrap: wrap;
+            flex-direction: column;
             gap: 12px;
         }
-
         .search-input {
-            flex: 1;
-            min-width: 220px;
-            padding: 12px 14px;
+            width: 100%;
+            padding: 11px 14px;
             border-radius: 8px;
-            border: 1px solid #333;
-            background: #24242b;
+            border: 1px solid #383846;
+            background: #14141a;
             color: white;
             font-size: 0.95rem;
         }
-
-        .filter-pills {
+        .filter-row {
             display: flex;
             flex-wrap: wrap;
             gap: 8px;
+            align-items: center;
         }
-
-        .pill {
-            padding: 10px 14px;
-            border-radius: 8px;
-            border: 1px solid #333;
-            background: #24242b;
-            color: #ccc;
-            cursor: pointer;
-            font-size: 0.85rem;
+        .filter-label {
+            font-size: 0.82rem;
+            color: #94a3b8;
             font-weight: bold;
+            margin-right: 4px;
         }
-
-        .pill.active {
-            background: #5865F2;
-            border-color: #5865F2;
+        .filter-pill {
+            padding: 6px 12px;
+            border-radius: 999px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            background: #272732;
+            color: #e2e8f0;
+            font-size: 0.8rem;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .filter-pill.active {
+            background: #4a69bd;
+            border-color: #74b9ff;
             color: white;
         }
 
         .grid {
-            max-width: 960px;
-            margin: 0 auto;
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
             gap: 18px;
         }
-
-        .card {
-            background: #24242b;
-            border: 1px solid rgba(255, 255, 255, 0.08);
+        .profile-card {
+            background: #1e1e26;
+            border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 14px;
-            overflow: hidden;
+            padding: 20px;
             display: flex;
             flex-direction: column;
-            text-decoration: none;
-            color: white;
-            transition: transform 0.18s ease, border-color 0.18s ease;
+            gap: 12px;
+            transition: transform 0.15s ease, border-color 0.2s ease;
         }
-
-        .card:hover {
-            transform: translateY(-4px);
-            border-color: rgba(255, 255, 255, 0.3);
+        .profile-card:hover {
+            transform: translateY(-2px);
+            border-color: rgba(116, 185, 255, 0.45);
         }
-
-        .card-banner {
-            height: 76px;
-            background: linear-gradient(135deg, #2d3436, #5865F2);
-            background-size: cover;
-            background-position: center;
+        .profile-card.vip-glow {
+            border-color: rgba(241, 196, 15, 0.65);
+            box-shadow: 0 0 20px rgba(241, 196, 15, 0.18);
         }
-
-        .card-body {
-            padding: 0 18px 18px 18px;
-            margin-top: -32px;
+        .card-head {
             display: flex;
-            flex-direction: column;
-            flex: 1;
+            align-items: center;
+            gap: 12px;
         }
-
-        .card-avatar {
-            width: 64px;
-            height: 64px;
+        .avatar-img {
+            width: 56px;
+            height: 56px;
             border-radius: 50%;
             object-fit: cover;
-            border: 3px solid #24242b;
-            background: #333;
+            border: 2px solid rgba(255, 255, 255, 0.35);
+            background: #2a2a35;
+            flex-shrink: 0;
+        }
+        .avatar-text {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.35);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.4rem;
             font-weight: bold;
-            color: #aaa;
-        }
-
-        .card-title {
-            margin: 10px 0 4px 0;
             font-size: 1.15rem;
-            font-weight: bold;
+            color: white;
+            flex-shrink: 0;
+            user-select: none;
+        }
+        .user-meta {
+            min-width: 0;
+            flex: 1;
+        }
+        .username-title {
+            margin: 0;
+            font-size: 1.1rem;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 4px;
+            padding: 3px 9px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.07);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            font-size: 0.74rem;
+            color: #e2e8f0;
+            max-width: 100%;
+        }
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+        .status-label {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
 
         .badges-row {
             display: flex;
             flex-wrap: wrap;
             gap: 5px;
-            margin-bottom: 10px;
         }
-
         .badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
             padding: 3px 8px;
             border-radius: 999px;
-            font-size: 0.72rem;
+            font-size: 0.7rem;
             font-weight: bold;
-            letter-spacing: 0.3px;
         }
+        .badge-owner { background: rgba(241, 196, 15, 0.22); color: #f1c40f; border: 1px solid rgba(241, 196, 15, 0.55); }
+        .badge-staff { background: rgba(231, 76, 60, 0.22); color: #ff7675; border: 1px solid rgba(231, 76, 60, 0.55); }
+        .badge-beta { background: rgba(155, 89, 182, 0.25); color: #d29bfd; border: 1px solid rgba(155, 89, 182, 0.6); }
+        .badge-verified { background: rgba(52, 152, 219, 0.22); color: #74b9ff; border: 1px solid rgba(52, 152, 219, 0.55); }
+        .badge-friend { background: rgba(46, 204, 113, 0.22); color: #55efc4; border: 1px solid rgba(46, 204, 113, 0.55); }
+        .badge-default { background: rgba(255, 255, 255, 0.14); color: #fff; border: 1px solid rgba(255, 255, 255, 0.25); }
 
-        .badge-owner { background: rgba(241, 196, 15, 0.2); color: #f1c40f; border: 1px solid rgba(241, 196, 15, 0.5); }
-        .badge-staff { background: rgba(231, 76, 60, 0.2); color: #ff7675; border: 1px solid rgba(231, 76, 60, 0.5); }
-        .badge-beta { background: rgba(155, 89, 182, 0.22); color: #d29bfd; border: 1px solid rgba(155, 89, 182, 0.55); }
-        .badge-verified { background: rgba(52, 152, 219, 0.2); color: #74b9ff; border: 1px solid rgba(52, 152, 219, 0.5); }
-        .badge-friend { background: rgba(46, 204, 113, 0.2); color: #55efc4; border: 1px solid rgba(46, 204, 113, 0.5); }
-        .badge-default { background: rgba(255, 255, 255, 0.12); color: #eee; border: 1px solid rgba(255, 255, 255, 0.25); }
-
-        .card-bio {
-            font-size: 0.88rem;
-            color: #bbb;
+        .bio-excerpt {
             margin: 0;
-            line-height: 1.4;
+            font-size: 0.88rem;
+            color: #cbd5e1;
+            line-height: 1.45;
             display: -webkit-box;
-            -webkit-line-clamp: 2;
+            -webkit-line-clamp: 3;
             -webkit-box-orient: vertical;
             overflow: hidden;
         }
 
-        .empty-state {
-            max-width: 960px;
-            margin: 40px auto;
+        .skills-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+        .skill-chip {
+            padding: 3px 9px;
+            border-radius: 999px;
+            font-size: 0.73rem;
+            font-weight: bold;
+            background: rgba(116, 185, 255, 0.14);
+            color: #bae6fd;
+            border: 1px solid rgba(116, 185, 255, 0.3);
+        }
+
+        .open-btn {
+            margin-top: auto;
+            display: inline-block;
             text-align: center;
-            color: #999;
+            padding: 9px 12px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            text-decoration: none;
+            font-size: 0.88rem;
+            font-weight: bold;
+            border: 1px solid rgba(255, 255, 255, 0.16);
+        }
+        .open-btn:hover {
+            background: rgba(255, 255, 255, 0.18);
+        }
+        .empty-state {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 40px 20px;
+            color: #94a3b8;
+            background: #1e1e26;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
         }
     </style>
 </head>
 <body>
-    <div class="top-bar">
-        <h1>Explore Portfolios</h1>
-        <div class="nav-links">
-            <a class="nav-btn" href="index.html">Log In / Sign Up</a>
-            <a class="nav-btn primary" href="dashboard.html">My Dashboard</a>
+    <div class="page-wrap">
+        <div class="top-bar">
+            <div>
+                <h1>Explore Portfolios</h1>
+                <p class="subtitle">Discover creators, live statuses, and skills across the community.</p>
+            </div>
+            <div class="nav-links">
+                <a class="nav-btn" href="index.html">Home / Login</a>
+                <a class="nav-btn primary" href="dashboard.html">My Dashboard</a>
+            </div>
+        </div>
+
+        <div class="controls-panel">
+            <input type="search" id="search-input" class="search-input" placeholder="Search by username, bio, status, or skill (e.g. Luau, Python)...">
+            <div class="filter-row" id="tag-filters">
+                <span class="filter-label">Filter by Tag:</span>
+                <button type="button" class="filter-pill active" data-tag="all">All</button>
+                <button type="button" class="filter-pill" data-tag="owner">Owner</button>
+                <button type="button" class="filter-pill" data-tag="staff">Staff</button>
+                <button type="button" class="filter-pill" data-tag="verified">Verified</button>
+                <button type="button" class="filter-pill" data-tag="beta">Beta Tester</button>
+                <button type="button" class="filter-pill" data-tag="friend">Friend</button>
+            </div>
+        </div>
+
+        <div class="grid" id="profiles-grid">
+            <div class="empty-state">Loading public portfolios...</div>
         </div>
     </div>
-
-    <div class="controls">
-        <input type="text" id="search-box" class="search-input" placeholder="Search by username or bio...">
-        <div class="filter-pills" id="filter-pills">
-            <button type="button" class="pill active" data-filter="all">All</button>
-            <button type="button" class="pill" data-filter="owner">Owner</button>
-            <button type="button" class="pill" data-filter="staff">Staff</button>
-            <button type="button" class="pill" data-filter="beta">Beta</button>
-            <button type="button" class="pill" data-filter="verified">Verified</button>
-            <button type="button" class="pill" data-filter="friend">Friend</button>
-        </div>
-    </div>
-
-    <div class="grid" id="profiles-grid"></div>
-    <div class="empty-state" id="empty-state" style="display: none;">No profiles match your search.</div>
 
     <script>
         const SUPABASE_URL = 'https://osidyfibmwsktfoqjsdi.supabase.co';
@@ -243,7 +306,7 @@
         };
 
         let allProfiles = [];
-        let activeBadgeFilter = 'all';
+        let activeTag = 'all';
 
         function escapeHtml(str) {
             return String(str ?? '')
@@ -253,112 +316,149 @@
                 .replace(/"/g, '&quot;');
         }
 
-        async function checkSiteShutdown() {
-            const { data } = await supabaseClient
-                .from('site_config')
-                .select('is_shutdown, shutdown_message')
-                .eq('id', 1)
-                .maybeSingle();
+        function stripMarkdownForExcerpt(raw) {
+            return String(raw ?? '')
+                .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+                .replace(/[`*_#>-]/g, '')
+                .replace(/\s+/g, ' ')
+                .trim();
+        }
 
-            if (data && data.is_shutdown) {
-                document.body.innerHTML =
-                    '<div style="max-width:520px;margin:100px auto;padding:32px;background:#24242b;color:#fff;border-radius:12px;text-align:center;font-family:sans-serif;">' +
-                    '<h1>Website Offline</h1>' +
-                    '<p style="color:#ccc;">' + escapeHtml(data.shutdown_message || 'The site is temporarily offline for maintenance.') + '</p>' +
-                    '<a href="dashboard.html" style="display:inline-block;margin-top:16px;padding:10px 16px;background:#5865F2;color:#fff;text-decoration:none;border-radius:8px;">Staff Dashboard</a>' +
-                    '</div>';
-                return true;
+        function renderCardAvatar(profile) {
+            const raw = String(profile.avatar_url || '');
+            if (profile.avatar_type === 'text' || raw.startsWith('text:')) {
+                const parts = raw.replace(/^text:/, '').split('|');
+                const colorHex = /^#[0-9a-fA-F]{6}$/.test(parts[0]) ? parts[0] : '#4a69bd';
+                const label = parts.slice(1).join('|').trim() || (profile.username || '?').slice(0, 2).toUpperCase();
+                return '<div class="avatar-text" style="background:' + escapeHtml(colorHex) + ';">' + escapeHtml(label) + '</div>';
             }
-            return false;
+            if (raw) {
+                return '<img class="avatar-img" src="' + escapeHtml(raw) + '" alt="' + escapeHtml(profile.username || '') + '" onerror="this.style.display=\'none\'">';
+            }
+            const fallback = (profile.username || '?').slice(0, 2).toUpperCase();
+            return '<div class="avatar-text" style="background:#334155;">' + escapeHtml(fallback) + '</div>';
         }
 
-        function getProfileUrl(username) {
-            return 'portfolio.html?u=' + encodeURIComponent(username);
+        function renderCardStatus(profile) {
+            const text = String(profile.status_text || '').trim();
+            if (!text) return '';
+            const color = /^#[0-9a-fA-F]{6}$/.test(profile.status_color || '') ? profile.status_color : '#2ecc71';
+            return (
+                '<div class="status-pill" title="' + escapeHtml(text) + '">' +
+                '<span class="status-dot" style="background:' + escapeHtml(color) + ';box-shadow:0 0 6px ' + escapeHtml(color) + ';"></span>' +
+                '<span class="status-label">' + escapeHtml(text) + '</span>' +
+                '</div>'
+            );
         }
 
-        function renderBadges(badges) {
+        function renderCardBadges(badges) {
             if (!Array.isArray(badges) || badges.length === 0) return '';
-            return '<div class="badges-row">' + badges.map(function (raw) {
-                const key = String(raw).trim().toLowerCase();
-                const meta = BADGE_META[key] || { label: escapeHtml(raw), cls: 'badge-default' };
+            return '<div class="badges-row">' + badges.map(function (b) {
+                const key = String(b).trim().toLowerCase();
+                const meta = BADGE_META[key] || { label: escapeHtml(b), cls: 'badge-default' };
                 return '<span class="badge ' + meta.cls + '">' + meta.label + '</span>';
             }).join('') + '</div>';
         }
 
-        function renderGrid() {
-            const query = document.getElementById('search-box').value.trim().toLowerCase();
+        function renderCardSkills(skills) {
+            if (!Array.isArray(skills) || skills.length === 0) return '';
+            const clean = skills.map(function (s) { return String(s).trim(); }).filter(Boolean).slice(0, 5);
+            if (clean.length === 0) return '';
+            return '<div class="skills-row">' + clean.map(function (s) {
+                return '<span class="skill-chip">' + escapeHtml(s) + '</span>';
+            }).join('') + '</div>';
+        }
+
+        function renderProfiles() {
             const grid = document.getElementById('profiles-grid');
-            const empty = document.getElementById('empty-state');
+            const q = document.getElementById('search-input').value.trim().toLowerCase();
 
             const filtered = allProfiles.filter(function (p) {
+                if (p.is_public === false) return false;
                 if (!p.username) return false;
-                const badges = Array.isArray(p.badges) ? p.badges.map(function (b) { return b.toLowerCase(); }) : [];
-                if (activeBadgeFilter !== 'all' && !badges.includes(activeBadgeFilter)) return false;
 
-                if (!query) return true;
-                return p.username.toLowerCase().includes(query) ||
-                       (p.bio && p.bio.toLowerCase().includes(query));
+                const badges = Array.isArray(p.badges)
+                    ? p.badges.map(function (b) { return String(b).trim().toLowerCase(); })
+                    : [];
+
+                if (activeTag !== 'all' && !badges.includes(activeTag)) {
+                    return false;
+                }
+
+                if (!q) return true;
+
+                const skillsText = Array.isArray(p.skills) ? p.skills.join(' ') : String(p.skills || '');
+                const haystack = [
+                    p.username || '',
+                    p.bio || '',
+                    p.status_text || '',
+                    skillsText,
+                    badges.join(' ')
+                ].join(' ').toLowerCase();
+
+                return haystack.includes(q);
             });
 
             if (filtered.length === 0) {
-                grid.innerHTML = '';
-                empty.style.display = 'block';
+                grid.innerHTML = '<div class="empty-state">No matching public portfolios found.</div>';
                 return;
             }
 
-            empty.style.display = 'none';
             grid.innerHTML = filtered.map(function (p) {
-                const isImageBg = p.background_url && p.background_type !== 'video';
-                const bannerStyle = isImageBg ? 'style="background-image: url(\'' + escapeHtml(p.background_url) + '\')"' : '';
-                const avatarHtml = p.avatar_url
-                    ? '<img class="card-avatar" src="' + escapeHtml(p.avatar_url) + '" alt="' + escapeHtml(p.username) + '">'
-                    : '<div class="card-avatar">' + escapeHtml(p.username.charAt(0).toUpperCase()) + '</div>';
+                const badges = Array.isArray(p.badges)
+                    ? p.badges.map(function (b) { return String(b).trim().toLowerCase(); })
+                    : [];
+                const hasGlow = Boolean(p.vip_glow) && badges.length > 0;
+                const excerpt = stripMarkdownForExcerpt(p.bio || '');
+                const href = 'portfolio.html?u=' + encodeURIComponent(p.username);
 
                 return (
-                    '<a class="card" href="' + getProfileUrl(p.username) + '">' +
-                        '<div class="card-banner" ' + bannerStyle + '></div>' +
-                        '<div class="card-body">' +
-                            avatarHtml +
-                            '<div class="card-title">' + escapeHtml(p.username) + '</div>' +
-                            renderBadges(p.badges) +
-                            '<p class="card-bio">' + escapeHtml(p.bio || 'No bio yet.') + '</p>' +
-                        '</div>' +
-                    '</a>'
+                    '<article class="profile-card' + (hasGlow ? ' vip-glow' : '') + '">' +
+                    '<div class="card-head">' +
+                    renderCardAvatar(p) +
+                    '<div class="user-meta">' +
+                    '<h2 class="username-title">' + escapeHtml(p.username) + '</h2>' +
+                    renderCardStatus(p) +
+                    '</div>' +
+                    '</div>' +
+                    renderCardBadges(p.badges) +
+                    (excerpt ? '<p class="bio-excerpt">' + escapeHtml(excerpt) + '</p>' : '') +
+                    renderCardSkills(p.skills) +
+                    '<a class="open-btn" href="' + escapeHtml(href) + '">View Portfolio -></a>' +
+                    '</article>'
                 );
             }).join('');
         }
 
-        async function loadDirectory() {
-            if (await checkSiteShutdown()) return;
+        document.getElementById('search-input').addEventListener('input', renderProfiles);
 
+        document.querySelectorAll('#tag-filters .filter-pill').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                document.querySelectorAll('#tag-filters .filter-pill').forEach(function (b) {
+                    b.classList.remove('active');
+                });
+                btn.classList.add('active');
+                activeTag = btn.getAttribute('data-tag') || 'all';
+                renderProfiles();
+            });
+        });
+
+        async function loadExploreProfiles() {
+            const grid = document.getElementById('profiles-grid');
             const { data, error } = await supabaseClient
                 .from('profiles')
-                .select('username, bio, avatar_url, background_url, background_type, badges, is_public')
-                .neq('is_public', false)
-                .order('username', { ascending: true });
+                .select('*');
 
             if (error) {
-                document.getElementById('empty-state').textContent = 'Failed to load profiles.';
-                document.getElementById('empty-state').style.display = 'block';
+                grid.innerHTML = '<div class="empty-state">Could not load portfolios: ' + escapeHtml(error.message) + '</div>';
                 return;
             }
 
-            allProfiles = data || [];
-            renderGrid();
+            allProfiles = Array.isArray(data) ? data : [];
+            renderProfiles();
         }
 
-        document.getElementById('search-box').addEventListener('input', renderGrid);
-
-        document.getElementById('filter-pills').addEventListener('click', function (e) {
-            const btn = e.target.closest('.pill');
-            if (!btn) return;
-            document.querySelectorAll('.pill').forEach(function (p) { p.classList.remove('active'); });
-            btn.classList.add('active');
-            activeBadgeFilter = btn.getAttribute('data-filter');
-            renderGrid();
-        });
-
-        loadDirectory();
+        loadExploreProfiles();
     </script>
 </body>
 </html>
