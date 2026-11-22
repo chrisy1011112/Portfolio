@@ -1,0 +1,160 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="data:,">
+    <title>Portfolio Platform</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            font-family: sans-serif;
+            background: #16161a;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+        .auth-card {
+            background: #24242b;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 14px;
+            padding: 32px;
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+        h1 {
+            margin: 0 0 8px 0;
+            font-size: 1.65rem;
+        }
+        .subtitle {
+            color: #aaa;
+            font-size: 0.92rem;
+            margin: 0 0 22px 0;
+        }
+        input {
+            width: 100%;
+            padding: 11px 12px;
+            margin-bottom: 12px;
+            border-radius: 7px;
+            border: 1px solid #3c3c48;
+            background: #18181d;
+            color: white;
+            font-size: 0.95rem;
+        }
+        .btn {
+            width: 100%;
+            padding: 11px;
+            border-radius: 7px;
+            border: none;
+            font-weight: bold;
+            font-size: 0.95rem;
+            cursor: pointer;
+            color: white;
+            margin-bottom: 10px;
+        }
+        .btn-primary { background: #28a745; }
+        .btn-secondary { background: #5865F2; }
+        .btn:hover { opacity: 0.92; }
+        .explore-link {
+            display: block;
+            margin-top: 14px;
+            padding: 10px;
+            border-radius: 7px;
+            background: rgba(255, 255, 255, 0.08);
+            color: #74b9ff;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 0.9rem;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+        }
+        .explore-link:hover {
+            background: rgba(255, 255, 255, 0.14);
+        }
+        #auth-status {
+            margin-top: 12px;
+            font-size: 0.88rem;
+            color: #7bed9f;
+            min-height: 1.2em;
+        }
+        #auth-status.error {
+            color: #ff7675;
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-card">
+        <h1>Portfolio Builder</h1>
+        <p class="subtitle">Sign in or create an account to customize your page.</p>
+
+        <input type="email" id="email" placeholder="Email address">
+        <input type="password" id="password" placeholder="Password">
+
+        <button type="button" class="btn btn-primary" id="login-btn">Log In</button>
+        <button type="button" class="btn btn-secondary" id="signup-btn">Sign Up</button>
+
+        <a class="explore-link" href="explore.html">Browse Public Portfolios</a>
+        <div id="auth-status"></div>
+    </div>
+
+    <script>
+        const SUPABASE_URL = 'https://osidyfibmwsktfoqjsdi.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_QQXGFi2pk743FpoD1D5AlA_X-ZRGoXT';
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        function setAuthStatus(msg, isError) {
+            const el = document.getElementById('auth-status');
+            el.textContent = msg;
+            el.className = isError ? 'error' : '';
+        }
+
+        async function redirectIfLoggedIn() {
+            const { data: { user } } = await supabaseClient.auth.getUser();
+            if (user) {
+                window.location.href = 'dashboard.html';
+            }
+        }
+
+        document.getElementById('login-btn').addEventListener('click', async function () {
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+            if (!email || !password) {
+                setAuthStatus('Enter both email and password.', true);
+                return;
+            }
+
+            setAuthStatus('Logging in...', false);
+            const { error } = await supabaseClient.auth.signInWithPassword({ email: email, password: password });
+            if (error) {
+                setAuthStatus(error.message, true);
+            } else {
+                window.location.href = 'dashboard.html';
+            }
+        });
+
+        document.getElementById('signup-btn').addEventListener('click', async function () {
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+            if (!email || !password) {
+                setAuthStatus('Enter both email and password.', true);
+                return;
+            }
+
+            setAuthStatus('Creating account...', false);
+            const { error } = await supabaseClient.auth.signUp({ email: email, password: password });
+            if (error) {
+                setAuthStatus(error.message, true);
+            } else {
+                setAuthStatus('Account created! Check your email or log in now.', false);
+            }
+        });
+
+        redirectIfLoggedIn();
+    </script>
+</body>
+</html>

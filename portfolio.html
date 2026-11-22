@@ -1,0 +1,443 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="data:,">
+    <title>Portfolio</title>
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            width: 100%;
+        }
+
+        body {
+            background-color: #1a1a1a;
+            background-size: cover;
+            background-position: center center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            color: white;
+            font-family: sans-serif;
+            text-align: center;
+            padding: 20px;
+            box-sizing: border-box;
+            position: relative;
+        }
+
+        .bg-video {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            min-width: 100vw;
+            min-height: 100vh;
+            width: auto;
+            height: auto;
+            transform: translate(-50%, -50%);
+            object-fit: cover;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .top-nav {
+            position: fixed;
+            top: 16px;
+            right: 16px;
+            z-index: 10;
+            display: flex;
+            gap: 8px;
+        }
+
+        .top-nav a {
+            padding: 7px 13px;
+            border-radius: 8px;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(6px);
+            color: white;
+            text-decoration: none;
+            font-size: 0.85rem;
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+
+        .top-nav a:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            background: rgba(0, 0, 0, 0.72);
+            backdrop-filter: blur(8px);
+            padding: 40px;
+            border-radius: 15px;
+            max-width: 600px;
+            margin: 80px auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .container.vip-glow {
+            border-color: rgba(241, 196, 15, 0.75);
+            box-shadow: 0 0 28px rgba(241, 196, 15, 0.28);
+        }
+
+        .section {
+            padding: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .section:last-child {
+            border-bottom: none;
+        }
+
+        .pfp {
+            width: 110px;
+            height: 110px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid rgba(255, 255, 255, 0.8);
+            margin: 0 auto 12px auto;
+            display: block;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .badges-row {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 6px;
+            margin: 8px 0 12px 0;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 0.78rem;
+            font-weight: bold;
+            letter-spacing: 0.3px;
+        }
+
+        .badge-owner { background: rgba(241, 196, 15, 0.22); color: #f1c40f; border: 1px solid rgba(241, 196, 15, 0.55); }
+        .badge-staff { background: rgba(231, 76, 60, 0.22); color: #ff7675; border: 1px solid rgba(231, 76, 60, 0.55); }
+        .badge-beta { background: rgba(155, 89, 182, 0.25); color: #d29bfd; border: 1px solid rgba(155, 89, 182, 0.6); }
+        .badge-verified { background: rgba(52, 152, 219, 0.22); color: #74b9ff; border: 1px solid rgba(52, 152, 219, 0.55); }
+        .badge-friend { background: rgba(46, 204, 113, 0.22); color: #55efc4; border: 1px solid rgba(46, 204, 113, 0.55); }
+        .badge-default { background: rgba(255, 255, 255, 0.15); color: #fff; border: 1px solid rgba(255, 255, 255, 0.3); }
+
+        .links-list {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 12px;
+        }
+
+        .link-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 16px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.12);
+            color: white;
+            text-decoration: none;
+            font-size: 0.95rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            cursor: pointer;
+            transition: background 0.2s ease, transform 0.15s ease;
+        }
+
+        .link-btn:hover {
+            background: rgba(255, 255, 255, 0.24);
+            transform: translateY(-2px);
+        }
+
+        .link-btn.discord-btn {
+            background: rgba(88, 101, 242, 0.35);
+            border-color: rgba(88, 101, 242, 0.7);
+        }
+
+        .link-btn.discord-btn:hover {
+            background: rgba(88, 101, 242, 0.55);
+        }
+
+        .toast {
+            font-size: 0.85rem;
+            color: #a5f3fc;
+            margin-top: 8px;
+            min-height: 1.2em;
+        }
+
+        audio.inline-audio {
+            width: 100%;
+            margin-top: 8px;
+            border-radius: 8px;
+        }
+
+        iframe.custom-site-frame {
+            border: none;
+            width: 100vw;
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 999;
+            background: white;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <div class="top-nav">
+        <a href="explore.html">Explore</a>
+        <a href="dashboard.html">Dashboard</a>
+    </div>
+
+    <div class="container" id="portfolio-container">
+        <div id="section-bio" class="section" style="display: none;"></div>
+        <div id="section-links" class="section" style="display: none;"></div>
+        <div id="section-projects" class="section" style="display: none;"><p><em>(Projects coming soon)</em></p></div>
+        <div id="section-music" class="section" style="display: none;"></div>
+    </div>
+
+    <script>
+        const SUPABASE_URL = 'https://osidyfibmwsktfoqjsdi.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_QQXGFi2pk743FpoD1D5AlA_X-ZRGoXT';
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        const BADGE_META = {
+            owner: { label: 'Owner', cls: 'badge-owner' },
+            staff: { label: 'Staff', cls: 'badge-staff' },
+            beta: { label: 'Beta Tester', cls: 'badge-beta' },
+            verified: { label: 'Verified', cls: 'badge-verified' },
+            friend: { label: 'Friend', cls: 'badge-friend' }
+        };
+
+        function sanitizeUrl(url) {
+            if (!url) return '';
+            const trimmed = url.trim();
+            if (/^https?:\/\//i.test(trimmed)) return trimmed;
+            return 'https://' + trimmed;
+        }
+
+        function escapeHtml(str) {
+            return String(str ?? '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
+        }
+
+        function toEmbedMusicUrl(rawUrl) {
+            if (!rawUrl) return '';
+            const clean = sanitizeUrl(rawUrl.trim());
+            const spotifyMatch = clean.match(/open\.spotify\.com\/(track|album|playlist|episode)\/([a-zA-Z0-9]+)/i);
+            if (spotifyMatch) {
+                return 'https://open.spotify.com/embed/' + spotifyMatch[1] + '/' + spotifyMatch[2];
+            }
+            return clean;
+        }
+
+        function isDirectAudioFile(url) {
+            return /\.(mp3|wav|ogg|m4a|aac|flac)(\?|#|$)/i.test(url.trim());
+        }
+
+        async function checkSiteShutdown() {
+            const { data } = await supabaseClient
+                .from('site_config')
+                .select('is_shutdown, shutdown_message')
+                .eq('id', 1)
+                .maybeSingle();
+
+            if (data && data.is_shutdown) {
+                document.body.innerHTML =
+                    '<div style="max-width:520px;margin:100px auto;padding:32px;background:#24242b;color:#fff;border-radius:12px;text-align:center;font-family:sans-serif;">' +
+                    '<h1>Website Offline</h1>' +
+                    '<p style="color:#ccc;">' + escapeHtml(data.shutdown_message || 'The site is temporarily offline for maintenance.') + '</p>' +
+                    '<a href="dashboard.html" style="display:inline-block;margin-top:16px;padding:10px 16px;background:#5865F2;color:#fff;text-decoration:none;border-radius:8px;">Staff Dashboard</a>' +
+                    '</div>';
+                return true;
+            }
+            return false;
+        }
+
+        function renderBadges(badges) {
+            if (!Array.isArray(badges) || badges.length === 0) return '';
+            return '<div class="badges-row">' + badges.map(function (raw) {
+                const key = String(raw).trim().toLowerCase();
+                const meta = BADGE_META[key] || { label: escapeHtml(raw), cls: 'badge-default' };
+                return '<span class="badge ' + meta.cls + '">' + meta.label + '</span>';
+            }).join('') + '</div>';
+        }
+
+        function isVideoUrl(url, explicitType) {
+            if (explicitType === 'video') return true;
+            if (explicitType === 'image') return false;
+            return /\.(mp4|webm|ogg|mov)(\?|#|$)/i.test(url.trim());
+        }
+
+        function applyAnimatedOrStaticBackground(url, bgType) {
+            if (!url) return;
+            const cleanUrl = sanitizeUrl(url);
+
+            const existingVideo = document.querySelector('.bg-video');
+            if (existingVideo) existingVideo.remove();
+            document.body.style.backgroundImage = '';
+
+            if (isVideoUrl(cleanUrl, bgType)) {
+                const video = document.createElement('video');
+                video.className = 'bg-video';
+                video.src = cleanUrl;
+                video.autoplay = true;
+                video.loop = true;
+                video.muted = true;
+                video.playsInline = true;
+                document.body.prepend(video);
+            } else {
+                document.body.style.backgroundImage = 'url("' + escapeHtml(cleanUrl) + '")';
+            }
+        }
+
+        async function loadPortfolio() {
+            if (await checkSiteShutdown()) return;
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const username = urlParams.get('u') ? urlParams.get('u').trim() : '';
+            if (!username) {
+                document.getElementById('portfolio-container').innerHTML =
+                    '<h1>User not found</h1><p><a href="explore.html" style="color: #74b9ff;">Browse all portfolios</a></p>';
+                return;
+            }
+
+            const { data, error } = await supabaseClient
+                .from('profiles')
+                .select('*')
+                .ilike('username', username)
+                .maybeSingle();
+
+            if (error || !data) {
+                document.getElementById('portfolio-container').innerHTML =
+                    '<h1>User not found</h1><p><a href="explore.html" style="color: #74b9ff;">Browse all portfolios</a></p>';
+                return;
+            }
+
+            document.title = data.username + ' — Portfolio';
+
+            const hasAnyTag = Array.isArray(data.badges) && data.badges.length > 0;
+
+            if (hasAnyTag && data.custom_html && data.custom_html.trim()) {
+                const iframe = document.createElement('iframe');
+                iframe.className = 'custom-site-frame';
+                iframe.sandbox = 'allow-scripts allow-same-origin';
+                iframe.srcdoc = data.custom_html;
+                document.body.innerHTML = '';
+                document.body.appendChild(iframe);
+                return;
+            }
+
+            const container = document.getElementById('portfolio-container');
+            if (data.vip_glow && hasAnyTag) {
+                container.classList.add('vip-glow');
+            }
+
+            applyAnimatedOrStaticBackground(data.background_url, data.background_type);
+
+            const pfpHtml = data.avatar_url
+                ? '<img class="pfp" src="' + escapeHtml(data.avatar_url) + '" alt="' + escapeHtml(data.username) + '">'
+                : '';
+
+            document.getElementById('section-bio').innerHTML =
+                pfpHtml +
+                '<h1 style="margin-bottom: 4px;">' + escapeHtml(data.username) + '</h1>' +
+                renderBadges(data.badges) +
+                '<p>' + escapeHtml(data.bio || '') + '</p>';
+
+            const linksSection = document.getElementById('section-links');
+            let buttonsHtml = '';
+
+            if (data.discord_url) {
+                buttonsHtml +=
+                    '<a class="link-btn discord-btn" href="' + escapeHtml(sanitizeUrl(data.discord_url)) + '" target="_blank" rel="noopener noreferrer">Discord</a>';
+            } else if (data.discord_handle) {
+                buttonsHtml +=
+                    '<button type="button" class="link-btn discord-btn" id="copy-discord-btn" data-handle="' + escapeHtml(data.discord_handle) + '">Discord: ' + escapeHtml(data.discord_handle) + '</button>';
+            }
+
+            if (Array.isArray(data.links)) {
+                data.links.forEach(function (item) {
+                    if (item && item.url) {
+                        const label = item.label || item.url;
+                        buttonsHtml +=
+                            '<a class="link-btn" href="' + escapeHtml(sanitizeUrl(item.url)) + '" target="_blank" rel="noopener noreferrer">' + escapeHtml(label) + '</a>';
+                    }
+                });
+            }
+
+            if (buttonsHtml) {
+                linksSection.innerHTML =
+                    '<h3>Connect</h3>' +
+                    '<div class="links-list">' + buttonsHtml + '</div>' +
+                    '<div class="toast" id="copy-toast"></div>';
+            }
+
+            if (data.music_url) {
+                const cleanMusic = sanitizeUrl(data.music_url);
+                if (isDirectAudioFile(cleanMusic)) {
+                    document.getElementById('section-music').innerHTML =
+                        '<h3>Listen</h3>' +
+                        '<audio class="inline-audio" controls preload="metadata" src="' + escapeHtml(cleanMusic) + '"></audio>';
+                } else {
+                    const embedUrl = toEmbedMusicUrl(cleanMusic);
+                    document.getElementById('section-music').innerHTML =
+                        '<h3>Listen</h3>' +
+                        '<iframe src="' + escapeHtml(embedUrl) + '" width="100%" height="80" frameborder="0" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy" style="border-radius: 10px;"></iframe>';
+                }
+            }
+
+            const sections = {
+                bio: document.getElementById('section-bio'),
+                links: document.getElementById('section-links'),
+                projects: document.getElementById('section-projects'),
+                music: document.getElementById('section-music')
+            };
+
+            container.innerHTML = '';
+
+            const order = Array.isArray(data.layout_order) ? data.layout_order : ['bio', 'links', 'projects', 'music'];
+
+            order.forEach(function (sectionId) {
+                const el = sections[sectionId];
+                if (!el) return;
+                if (sectionId === 'music' && !data.music_url) return;
+                if (sectionId === 'links' && !buttonsHtml) return;
+
+                el.style.display = 'block';
+                container.appendChild(el);
+            });
+
+            const copyBtn = document.getElementById('copy-discord-btn');
+            if (copyBtn) {
+                copyBtn.addEventListener('click', async function () {
+                    const handle = copyBtn.getAttribute('data-handle');
+                    const toast = document.getElementById('copy-toast');
+                    try {
+                        await navigator.clipboard.writeText(handle);
+                        if (toast) toast.textContent = 'Copied "' + handle + '" to clipboard!';
+                    } catch (err) {
+                        if (toast) toast.textContent = 'Discord: ' + handle;
+                    }
+                });
+            }
+        }
+
+        loadPortfolio();
+    </script>
+</body>
+</html>

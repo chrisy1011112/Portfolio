@@ -1,0 +1,829 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="data:,">
+    <title>Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+    <style>
+        body {
+            font-family: sans-serif;
+            background: #222;
+            color: white;
+            padding: 20px;
+            margin: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            background: #333;
+            padding: 25px;
+            border-radius: 10px;
+        }
+        h1 {
+            margin: 0;
+            font-size: 1.55rem;
+        }
+        .top-actions {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+        .top-btns {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .view-link {
+            display: inline-block;
+            padding: 8px 12px;
+            background: #0984e3;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+        }
+        .view-link.secondary {
+            background: #555;
+        }
+        .view-link.admin {
+            background: #c0392b;
+        }
+        .view-link:hover {
+            opacity: 0.9;
+        }
+        .badges-bar {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 14px;
+            padding: 10px 12px;
+            background: #2a2a2a;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .badges-label {
+            font-size: 12px;
+            color: #aaa;
+            font-weight: bold;
+            margin-right: 4px;
+        }
+        .badge {
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: bold;
+            background: rgba(255, 255, 255, 0.14);
+        }
+        .badge-owner { background: rgba(241, 196, 15, 0.22); color: #f1c40f; border: 1px solid rgba(241, 196, 15, 0.55); }
+        .badge-staff { background: rgba(231, 76, 60, 0.22); color: #ff7675; border: 1px solid rgba(231, 76, 60, 0.55); }
+        .badge-beta { background: rgba(155, 89, 182, 0.25); color: #d29bfd; border: 1px solid rgba(155, 89, 182, 0.6); }
+        .badge-verified { background: rgba(52, 152, 219, 0.22); color: #74b9ff; border: 1px solid rgba(52, 152, 219, 0.55); }
+        .badge-friend { background: rgba(46, 204, 113, 0.22); color: #55efc4; border: 1px solid rgba(46, 204, 113, 0.55); }
+        .field-label {
+            display: block;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+        .hint {
+            font-size: 12px;
+            color: #bbb;
+            font-weight: normal;
+            display: block;
+            margin-top: 2px;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 10px;
+            margin-top: 6px;
+            border-radius: 5px;
+            border: none;
+            box-sizing: border-box;
+            background: #f4f4f4;
+            color: #111;
+        }
+        textarea.code-box {
+            font-family: monospace;
+            background: #18181b;
+            color: #e4e4e7;
+            border: 1px solid #444;
+            min-height: 170px;
+            resize: vertical;
+        }
+        input[type="file"] {
+            background: #444;
+            color: white;
+            padding: 8px;
+        }
+        .preview-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: 8px;
+        }
+        .pfp-preview {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #aaa;
+            background: #222;
+        }
+        .link-row {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+            align-items: center;
+        }
+        .link-row input {
+            margin-top: 0;
+            flex: 1;
+        }
+        .btn-small {
+            margin-top: 8px;
+            padding: 7px 12px;
+            font-size: 13px;
+            border-radius: 5px;
+            border: none;
+            cursor: pointer;
+            background: #4a69bd;
+            color: white;
+            font-weight: bold;
+        }
+        .btn-remove {
+            background: #c0392b;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 9px 12px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        button.main-btn {
+            margin-top: 20px;
+            padding: 12px 20px;
+            border-radius: 5px;
+            border: none;
+            cursor: pointer;
+            background: #28a745;
+            color: white;
+            font-weight: bold;
+            width: 100%;
+            font-size: 15px;
+        }
+        button.logout-btn {
+            background: #dc3545;
+            margin-top: 10px;
+        }
+        .drag-item {
+            background: #444;
+            padding: 11px 14px;
+            margin: 8px 0;
+            border-radius: 6px;
+            cursor: grab;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+        }
+        .drag-item:active {
+            cursor: grabbing;
+        }
+        .drag-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .drag-handle {
+            font-size: 20px;
+            color: #aaa;
+            user-select: none;
+        }
+        .section-action-btn {
+            padding: 5px 10px;
+            border-radius: 5px;
+            border: none;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+            color: white;
+        }
+        .section-remove-btn {
+            background: #c0392b;
+        }
+        .section-add-btn {
+            background: #28a745;
+        }
+        .available-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 8px;
+            min-height: 28px;
+        }
+        .available-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #2a2a2a;
+            border: 1px dashed rgba(255, 255, 255, 0.25);
+            padding: 7px 11px;
+            border-radius: 6px;
+            font-size: 13px;
+        }
+        .extra-section {
+            display: none;
+            border-top: 2px solid #555;
+            margin-top: 28px;
+            padding-top: 18px;
+        }
+        .checkbox-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 14px;
+            font-size: 14px;
+            color: #ddd;
+            font-weight: normal;
+            cursor: pointer;
+        }
+        .checkbox-row input[type="checkbox"] {
+            width: auto;
+            margin: 0;
+        }
+        #status-msg {
+            margin-top: 12px;
+            font-size: 14px;
+            color: #7bed9f;
+            min-height: 20px;
+            word-break: break-word;
+        }
+        #status-msg.error {
+            color: #ff7675;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="top-actions">
+            <h1>Edit Portfolio</h1>
+            <div class="top-btns">
+                <a class="view-link admin" href="admin.html" id="admin-nav-btn" style="display: none;">Admin</a>
+                <a class="view-link secondary" href="explore.html">Explore</a>
+                <button type="button" class="view-link secondary" id="copy-share-btn" style="display: none;">Copy Link</button>
+                <a id="view-portfolio-link" class="view-link" href="#" target="_blank" rel="noopener noreferrer" style="display: none;">View</a>
+            </div>
+        </div>
+
+        <div class="badges-bar" id="user-badges-bar">
+            <span class="badges-label">Your Tags:</span>
+            <span class="badge" style="opacity: 0.6;">LOADING...</span>
+        </div>
+
+        <label class="field-label" for="username">Username:</label>
+        <input type="text" id="username" placeholder="johndoe">
+
+        <label class="checkbox-row" for="is-public">
+            <input type="checkbox" id="is-public" checked>
+            <span>List my profile in the public Explore directory</span>
+        </label>
+
+        <label class="field-label" for="pfp-upload">
+            Profile Picture (PFP):
+            <span class="hint">Upload an image (JPG, PNG, GIF, WebP)</span>
+        </label>
+        <input type="file" id="pfp-upload" accept="image/*">
+        <div class="preview-row" id="pfp-preview-wrap" style="display: none;">
+            <img id="pfp-preview" class="pfp-preview" src="" alt="PFP Preview">
+            <span style="font-size: 13px; color: #ccc;">Current / selected PFP</span>
+        </div>
+
+        <label class="field-label" for="bio">Bio:</label>
+        <textarea id="bio" rows="3" placeholder="Tell people a bit about yourself..."></textarea>
+
+        <label class="field-label" for="discord-url">
+            Discord Link (Invite or Profile URL):
+            <span class="hint">Optional — e.g. https://discord.gg/yourserver or https://discord.com/users/123456</span>
+        </label>
+        <input type="text" id="discord-url" placeholder="https://discord.gg/yourinvite">
+
+        <label class="field-label" for="discord-handle">
+            Discord Handle (Copy on Click):
+            <span class="hint">Used if no Discord URL is set — e.g. yourusername</span>
+        </label>
+        <input type="text" id="discord-handle" placeholder="yourusername">
+
+        <span class="field-label">Social &amp; Custom Links:</span>
+        <div id="links-container"></div>
+        <button type="button" class="btn-small" id="add-link-btn">+ Add Link</button>
+
+        <label class="field-label" for="bg-upload">
+            Upload Background (Image, GIF, or Video):
+            <span class="hint">Supports JPG, PNG, GIF, WebP, MP4, WebM, OGG</span>
+        </label>
+        <input type="file" id="bg-upload" accept="image/*,video/mp4,video/webm,video/ogg">
+
+        <label class="field-label" for="music">
+            Music URL (Direct MP3/WAV/OGG or Spotify/SoundCloud Embed):
+            <span class="hint">Plays directly on your portfolio page without opening another site</span>
+        </label>
+        <input type="text" id="music" placeholder="https://.../song.mp3 or https://open.spotify.com/embed/track/...">
+
+        <label class="field-label" for="music-upload">
+            Or Upload Audio File (MP3, WAV, OGG, M4A):
+            <span class="hint">Requires a public "music" bucket in Supabase Storage</span>
+        </label>
+        <input type="file" id="music-upload" accept="audio/*">
+
+        <span class="field-label">
+            Active Page Sections (Drag to reorder or click Remove):
+        </span>
+        <div id="sortable-list"></div>
+
+        <span class="field-label" style="margin-top: 12px;">
+            Removed Sections (Click Add to put back on your page):
+        </span>
+        <div id="available-sections" class="available-list"></div>
+
+        <div id="tag-perks-section" class="extra-section">
+            <h3 style="color: #74b9ff; margin-top: 0;">Tag Perks</h3>
+            <div id="staff-owner-perk" style="display: none;">
+                <label class="checkbox-row" for="vip-glow">
+                    <input type="checkbox" id="vip-glow">
+                    <span>Enable Owner/Staff Gold Card Border Glow</span>
+                </label>
+            </div>
+        </div>
+
+        <div id="html-section" class="extra-section">
+            <h3 style="color: #f39c12; margin-top: 0;">Tag Perk: Paste Custom HTML</h3>
+            <p style="font-size: 13px; color: #ccc; margin-top: 4px;">
+                Because your account has a tag, you can paste custom HTML/CSS/JS below to replace your default portfolio. Leave blank to use the default layout.
+            </p>
+            <label class="field-label" for="custom-html-code">Custom HTML Code:</label>
+            <textarea id="custom-html-code" class="code-box" placeholder="<h1>Hello World</h1>"></textarea>
+            <button type="button" class="btn-small" style="background: #636e72;" id="clear-html-btn">Clear Custom HTML</button>
+        </div>
+
+        <button type="button" class="main-btn" id="save-btn">Save Changes</button>
+        <button type="button" class="main-btn logout-btn" id="logout-btn">Logout</button>
+        <div id="status-msg"></div>
+    </div>
+
+    <script>
+        const SUPABASE_URL = 'https://osidyfibmwsktfoqjsdi.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_QQXGFi2pk743FpoD1D5AlA_X-ZRGoXT';
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        let currentUser = null;
+        let userBadges = [];
+
+        const SECTION_LABELS = {
+            bio: 'Bio & PFP Section',
+            links: 'Discord & Links Section',
+            projects: 'Projects Section (Coming Soon)',
+            music: 'Music Player'
+        };
+        const ALL_SECTION_IDS = Object.keys(SECTION_LABELS);
+
+        const TAG_CLASSES = {
+            owner: 'badge-owner',
+            staff: 'badge-staff',
+            beta: 'badge-beta',
+            verified: 'badge-verified',
+            friend: 'badge-friend'
+        };
+
+        new Sortable(document.getElementById('sortable-list'), {
+            animation: 150,
+            handle: '.drag-handle'
+        });
+
+        function renderSectionLists(activeIds) {
+            const listEl = document.getElementById('sortable-list');
+            const availEl = document.getElementById('available-sections');
+
+            const validActive = Array.isArray(activeIds)
+                ? activeIds.filter(function (id) { return Boolean(SECTION_LABELS[id]); })
+                : ['bio', 'links', 'projects', 'music'];
+
+            const uniqueActive = Array.from(new Set(validActive));
+            const removed = ALL_SECTION_IDS.filter(function (id) { return !uniqueActive.includes(id); });
+
+            listEl.innerHTML = '';
+            uniqueActive.forEach(function (id) {
+                const item = document.createElement('div');
+                item.className = 'drag-item';
+                item.setAttribute('data-id', id);
+
+                const left = document.createElement('div');
+                left.className = 'drag-left';
+
+                const handle = document.createElement('span');
+                handle.className = 'drag-handle';
+                handle.title = 'Drag to reorder';
+                handle.textContent = '≡';
+
+                const label = document.createElement('span');
+                label.textContent = SECTION_LABELS[id];
+
+                left.appendChild(handle);
+                left.appendChild(label);
+
+                const removeBtn = document.createElement('button');
+                removeBtn.type = 'button';
+                removeBtn.className = 'section-action-btn section-remove-btn';
+                removeBtn.textContent = 'Remove';
+                removeBtn.addEventListener('click', function () {
+                    const currentOrder = getLayoutOrder().filter(function (x) { return x !== id; });
+                    renderSectionLists(currentOrder);
+                });
+
+                item.appendChild(left);
+                item.appendChild(removeBtn);
+                listEl.appendChild(item);
+            });
+
+            availEl.innerHTML = '';
+            if (removed.length === 0) {
+                const empty = document.createElement('span');
+                empty.style.fontSize = '12px';
+                empty.style.color = '#888';
+                empty.textContent = 'All sections are currently active.';
+                availEl.appendChild(empty);
+                return;
+            }
+
+            removed.forEach(function (id) {
+                const pill = document.createElement('div');
+                pill.className = 'available-pill';
+
+                const text = document.createElement('span');
+                text.textContent = SECTION_LABELS[id];
+
+                const addBtn = document.createElement('button');
+                addBtn.type = 'button';
+                addBtn.className = 'section-action-btn section-add-btn';
+                addBtn.textContent = '+ Add';
+                addBtn.addEventListener('click', function () {
+                    const currentOrder = getLayoutOrder().concat(id);
+                    renderSectionLists(currentOrder);
+                });
+
+                pill.appendChild(text);
+                pill.appendChild(addBtn);
+                availEl.appendChild(pill);
+            });
+        }
+
+        function buildPortfolioHref(username) {
+            return 'portfolio.html?u=' + encodeURIComponent(username);
+        }
+
+        function updatePortfolioLink(username) {
+            const linkEl = document.getElementById('view-portfolio-link');
+            const copyBtn = document.getElementById('copy-share-btn');
+            if (username) {
+                linkEl.href = buildPortfolioHref(username);
+                linkEl.style.display = 'inline-block';
+                copyBtn.style.display = 'inline-block';
+            } else {
+                linkEl.style.display = 'none';
+                copyBtn.style.display = 'none';
+            }
+        }
+
+        function setStatus(msg, isError) {
+            const el = document.getElementById('status-msg');
+            el.textContent = msg;
+            el.className = isError ? 'error' : '';
+        }
+
+        function addLinkRow(label, url) {
+            const container = document.getElementById('links-container');
+            const row = document.createElement('div');
+            row.className = 'link-row';
+
+            const labelInput = document.createElement('input');
+            labelInput.type = 'text';
+            labelInput.className = 'link-label';
+            labelInput.placeholder = 'Label (e.g. GitHub)';
+            labelInput.value = label || '';
+
+            const urlInput = document.createElement('input');
+            urlInput.type = 'text';
+            urlInput.className = 'link-url';
+            urlInput.placeholder = 'URL (e.g. https://github.com/...)';
+            urlInput.value = url || '';
+
+            const removeBtn = document.createElement('button');
+            removeBtn.type = 'button';
+            removeBtn.className = 'btn-remove';
+            removeBtn.title = 'Remove link';
+            removeBtn.textContent = 'X';
+            removeBtn.addEventListener('click', function () {
+                row.remove();
+            });
+
+            row.appendChild(labelInput);
+            row.appendChild(urlInput);
+            row.appendChild(removeBtn);
+            container.appendChild(row);
+        }
+
+        function getLinksData() {
+            const rows = document.querySelectorAll('#links-container .link-row');
+            const links = [];
+            rows.forEach(function (row) {
+                const label = row.querySelector('.link-label').value.trim();
+                const url = row.querySelector('.link-url').value.trim();
+                if (url) {
+                    links.push({ label: label || url, url: url });
+                }
+            });
+            return links;
+        }
+
+        function getLayoutOrder() {
+            const items = document.querySelectorAll('#sortable-list .drag-item');
+            return Array.from(items).map(function (item) {
+                return item.getAttribute('data-id');
+            });
+        }
+
+        document.getElementById('add-link-btn').addEventListener('click', function () {
+            addLinkRow('', '');
+        });
+
+        document.getElementById('clear-html-btn').addEventListener('click', function () {
+            document.getElementById('custom-html-code').value = '';
+            setStatus('Custom HTML cleared in editor. Click "Save Changes" to apply.', false);
+        });
+
+        document.getElementById('copy-share-btn').addEventListener('click', async function () {
+            const username = document.getElementById('username').value.trim();
+            if (!username) return;
+            const fullUrl = new URL(buildPortfolioHref(username), window.location.href).href;
+            try {
+                await navigator.clipboard.writeText(fullUrl);
+                setStatus('Copied share link: ' + fullUrl, false);
+            } catch (err) {
+                setStatus('Share link: ' + fullUrl, false);
+            }
+        });
+
+        document.getElementById('username').addEventListener('input', function (e) {
+            updatePortfolioLink(e.target.value.trim());
+        });
+
+        document.getElementById('pfp-upload').addEventListener('change', function (e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const previewWrap = document.getElementById('pfp-preview-wrap');
+            const previewImg = document.getElementById('pfp-preview');
+            previewImg.src = URL.createObjectURL(file);
+            previewWrap.style.display = 'flex';
+        });
+
+        function applyTagUI(badges) {
+            const normalized = Array.isArray(badges)
+                ? badges.map(function (b) { return String(b).trim().toLowerCase(); }).filter(Boolean)
+                : [];
+            userBadges = normalized;
+
+            const bar = document.getElementById('user-badges-bar');
+            bar.innerHTML = '';
+
+            const labelSpan = document.createElement('span');
+            labelSpan.className = 'badges-label';
+            labelSpan.textContent = 'Your Tags:';
+            bar.appendChild(labelSpan);
+
+            if (normalized.length > 0) {
+                normalized.forEach(function (b) {
+                    const span = document.createElement('span');
+                    span.className = 'badge ' + (TAG_CLASSES[b] || '');
+                    span.textContent = b.toUpperCase();
+                    bar.appendChild(span);
+                });
+                document.getElementById('html-section').style.display = 'block';
+            } else {
+                const emptySpan = document.createElement('span');
+                emptySpan.className = 'badge';
+                emptySpan.style.opacity = '0.6';
+                emptySpan.textContent = 'NO TAGS YET';
+                bar.appendChild(emptySpan);
+            }
+
+            const hasStaffOrOwner = normalized.includes('owner') || normalized.includes('staff');
+            if (hasStaffOrOwner) {
+                document.getElementById('tag-perks-section').style.display = 'block';
+                document.getElementById('staff-owner-perk').style.display = 'block';
+                document.getElementById('admin-nav-btn').style.display = 'inline-block';
+            }
+        }
+
+        async function checkUser() {
+            const { data: { user }, error } = await supabaseClient.auth.getUser();
+            if (error || !user) {
+                window.location.href = 'index.html';
+                return;
+            }
+            currentUser = user;
+            loadProfile();
+        }
+
+        async function loadProfile() {
+            const { data, error } = await supabaseClient
+                .from('profiles')
+                .select('*')
+                .eq('id', currentUser.id)
+                .maybeSingle();
+
+            if (error) {
+                setStatus('Error loading profile: ' + error.message, true);
+            }
+
+            if (data) {
+                document.getElementById('username').value = data.username || '';
+                updatePortfolioLink(data.username || '');
+                document.getElementById('is-public').checked = data.is_public !== false;
+                document.getElementById('bio').value = data.bio || '';
+                document.getElementById('discord-url').value = data.discord_url || '';
+                document.getElementById('discord-handle').value = data.discord_handle || '';
+                document.getElementById('music').value = data.music_url || '';
+                document.getElementById('custom-html-code').value = data.custom_html || '';
+                document.getElementById('vip-glow').checked = Boolean(data.vip_glow);
+
+                applyTagUI(data.badges);
+
+                if (data.avatar_url) {
+                    document.getElementById('pfp-preview').src = data.avatar_url;
+                    document.getElementById('pfp-preview-wrap').style.display = 'flex';
+                }
+
+                const linksContainer = document.getElementById('links-container');
+                linksContainer.innerHTML = '';
+                if (Array.isArray(data.links) && data.links.length > 0) {
+                    data.links.forEach(function (item) {
+                        addLinkRow(item.label || '', item.url || '');
+                    });
+                } else {
+                    addLinkRow('', '');
+                }
+
+                renderSectionLists(Array.isArray(data.layout_order) ? data.layout_order : ALL_SECTION_IDS);
+            } else {
+                applyTagUI([]);
+                addLinkRow('', '');
+                renderSectionLists(ALL_SECTION_IDS);
+            }
+        }
+
+        async function saveProfile() {
+            const saveBtn = document.getElementById('save-btn');
+            saveBtn.disabled = true;
+            setStatus('Saving changes...', false);
+
+            const username = document.getElementById('username').value.trim();
+            const isPublic = document.getElementById('is-public').checked;
+            const bio = document.getElementById('bio').value;
+            const discordUrl = document.getElementById('discord-url').value.trim() || null;
+            const discordHandle = document.getElementById('discord-handle').value.trim() || null;
+            const links = getLinksData();
+            let music = document.getElementById('music').value.trim() || null;
+            const layoutOrder = getLayoutOrder();
+
+            const hasAnyTag = userBadges.length > 0;
+            const hasStaffOrOwner = userBadges.includes('owner') || userBadges.includes('staff');
+            const customHtml = hasAnyTag
+                ? (document.getElementById('custom-html-code').value || null)
+                : null;
+            const vipGlow = hasStaffOrOwner ? document.getElementById('vip-glow').checked : false;
+
+            const pfpFile = document.getElementById('pfp-upload').files[0];
+            const bgFile = document.getElementById('bg-upload').files[0];
+            const musicFile = document.getElementById('music-upload').files[0];
+
+            let avatarUrl = null;
+            let bgUrl = null;
+            let bgType = null;
+
+            if (!username) {
+                saveBtn.disabled = false;
+                setStatus('Please enter a username before saving.', true);
+                return alert('Please enter a username.');
+            }
+
+            if (pfpFile) {
+                if (!pfpFile.type.startsWith('image/')) {
+                    saveBtn.disabled = false;
+                    return alert('Please select a valid image file for your profile picture.');
+                }
+                const fileExt = (pfpFile.name.split('.').pop() || 'png').toLowerCase();
+                const filePath = currentUser.id + '/avatar.' + fileExt;
+                const { error } = await supabaseClient.storage
+                    .from('avatars')
+                    .upload(filePath, pfpFile, { upsert: true, contentType: pfpFile.type });
+
+                if (error) {
+                    saveBtn.disabled = false;
+                    setStatus('PFP Upload failed: ' + error.message, true);
+                    return alert('PFP Upload failed: ' + error.message);
+                }
+                avatarUrl = supabaseClient.storage.from('avatars').getPublicUrl(filePath).data.publicUrl + '?t=' + Date.now();
+            }
+
+            if (bgFile) {
+                const isImage = bgFile.type.startsWith('image/');
+                const isVideo = bgFile.type.startsWith('video/');
+                if (!isImage && !isVideo) {
+                    saveBtn.disabled = false;
+                    return alert('Please select a valid image or video for your background.');
+                }
+                bgType = isVideo ? 'video' : 'image';
+                const fileExt = (bgFile.name.split('.').pop() || (isVideo ? 'mp4' : 'png')).toLowerCase();
+                const filePath = currentUser.id + '/background.' + fileExt;
+                const { error } = await supabaseClient.storage
+                    .from('backgrounds')
+                    .upload(filePath, bgFile, { upsert: true, contentType: bgFile.type });
+
+                if (error) {
+                    saveBtn.disabled = false;
+                    setStatus('Background Upload failed: ' + error.message, true);
+                    return alert('Background Upload failed: ' + error.message);
+                }
+                bgUrl = supabaseClient.storage.from('backgrounds').getPublicUrl(filePath).data.publicUrl + '?t=' + Date.now();
+            }
+
+            if (musicFile) {
+                if (!musicFile.type.startsWith('audio/')) {
+                    saveBtn.disabled = false;
+                    return alert('Please select a valid audio file.');
+                }
+                const fileExt = (musicFile.name.split('.').pop() || 'mp3').toLowerCase();
+                const filePath = currentUser.id + '/track.' + fileExt;
+                const { error } = await supabaseClient.storage
+                    .from('music')
+                    .upload(filePath, musicFile, { upsert: true, contentType: musicFile.type });
+
+                if (error) {
+                    saveBtn.disabled = false;
+                    setStatus('Music Upload failed: ' + error.message, true);
+                    return alert('Music Upload failed: ' + error.message);
+                }
+                music = supabaseClient.storage.from('music').getPublicUrl(filePath).data.publicUrl + '?t=' + Date.now();
+                document.getElementById('music').value = music;
+            }
+
+            const updates = {
+                id: currentUser.id,
+                username: username,
+                is_public: isPublic,
+                bio: bio,
+                discord_url: discordUrl,
+                discord_handle: discordHandle,
+                links: links,
+                music_url: music,
+                layout_order: layoutOrder,
+                custom_html: customHtml,
+                vip_glow: vipGlow
+            };
+
+            if (avatarUrl) updates.avatar_url = avatarUrl;
+            if (bgUrl) {
+                updates.background_url = bgUrl;
+                updates.background_type = bgType;
+            }
+
+            const { error } = await supabaseClient.from('profiles').upsert(updates);
+            saveBtn.disabled = false;
+
+            if (error) {
+                setStatus('Database error: ' + error.message, true);
+                alert('Database error: ' + error.message);
+            } else {
+                updatePortfolioLink(username);
+                setStatus('Saved successfully!', false);
+                alert('Saved successfully!');
+            }
+        }
+
+        document.getElementById('save-btn').addEventListener('click', saveProfile);
+        document.getElementById('logout-btn').addEventListener('click', async function () {
+            await supabaseClient.auth.signOut();
+            window.location.href = 'index.html';
+        });
+
+        checkUser();
+    </script>
+</body>
+</html>

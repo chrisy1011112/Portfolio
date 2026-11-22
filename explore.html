@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="data:,">
+    <title>Explore Portfolios</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            padding: 24px;
+            min-height: 100vh;
+            font-family: sans-serif;
+            background: #16161a;
+            color: white;
+        }
+
+        .top-bar {
+            max-width: 960px;
+            margin: 0 auto 24px auto;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .top-bar h1 {
+            margin: 0;
+            font-size: 1.7rem;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 10px;
+        }
+
+        .nav-btn {
+            padding: 9px 15px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: bold;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            transition: background 0.2s ease;
+        }
+
+        .nav-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .nav-btn.primary {
+            background: #28a745;
+            border-color: #28a745;
+        }
+
+        .controls {
+            max-width: 960px;
+            margin: 0 auto 24px auto;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .search-input {
+            flex: 1;
+            min-width: 220px;
+            padding: 12px 14px;
+            border-radius: 8px;
+            border: 1px solid #333;
+            background: #24242b;
+            color: white;
+            font-size: 0.95rem;
+        }
+
+        .filter-pills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .pill {
+            padding: 10px 14px;
+            border-radius: 8px;
+            border: 1px solid #333;
+            background: #24242b;
+            color: #ccc;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: bold;
+        }
+
+        .pill.active {
+            background: #5865F2;
+            border-color: #5865F2;
+            color: white;
+        }
+
+        .grid {
+            max-width: 960px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+            gap: 18px;
+        }
+
+        .card {
+            background: #24242b;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 14px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            text-decoration: none;
+            color: white;
+            transition: transform 0.18s ease, border-color 0.18s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .card-banner {
+            height: 76px;
+            background: linear-gradient(135deg, #2d3436, #5865F2);
+            background-size: cover;
+            background-position: center;
+        }
+
+        .card-body {
+            padding: 0 18px 18px 18px;
+            margin-top: -32px;
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+
+        .card-avatar {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #24242b;
+            background: #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: #aaa;
+        }
+
+        .card-title {
+            margin: 10px 0 4px 0;
+            font-size: 1.15rem;
+            font-weight: bold;
+        }
+
+        .badges-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-bottom: 10px;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 8px;
+            border-radius: 999px;
+            font-size: 0.72rem;
+            font-weight: bold;
+            letter-spacing: 0.3px;
+        }
+
+        .badge-owner { background: rgba(241, 196, 15, 0.2); color: #f1c40f; border: 1px solid rgba(241, 196, 15, 0.5); }
+        .badge-staff { background: rgba(231, 76, 60, 0.2); color: #ff7675; border: 1px solid rgba(231, 76, 60, 0.5); }
+        .badge-beta { background: rgba(155, 89, 182, 0.22); color: #d29bfd; border: 1px solid rgba(155, 89, 182, 0.55); }
+        .badge-verified { background: rgba(52, 152, 219, 0.2); color: #74b9ff; border: 1px solid rgba(52, 152, 219, 0.5); }
+        .badge-friend { background: rgba(46, 204, 113, 0.2); color: #55efc4; border: 1px solid rgba(46, 204, 113, 0.5); }
+        .badge-default { background: rgba(255, 255, 255, 0.12); color: #eee; border: 1px solid rgba(255, 255, 255, 0.25); }
+
+        .card-bio {
+            font-size: 0.88rem;
+            color: #bbb;
+            margin: 0;
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .empty-state {
+            max-width: 960px;
+            margin: 40px auto;
+            text-align: center;
+            color: #999;
+        }
+    </style>
+</head>
+<body>
+    <div class="top-bar">
+        <h1>Explore Portfolios</h1>
+        <div class="nav-links">
+            <a class="nav-btn" href="index.html">Log In / Sign Up</a>
+            <a class="nav-btn primary" href="dashboard.html">My Dashboard</a>
+        </div>
+    </div>
+
+    <div class="controls">
+        <input type="text" id="search-box" class="search-input" placeholder="Search by username or bio...">
+        <div class="filter-pills" id="filter-pills">
+            <button type="button" class="pill active" data-filter="all">All</button>
+            <button type="button" class="pill" data-filter="owner">Owner</button>
+            <button type="button" class="pill" data-filter="staff">Staff</button>
+            <button type="button" class="pill" data-filter="beta">Beta</button>
+            <button type="button" class="pill" data-filter="verified">Verified</button>
+            <button type="button" class="pill" data-filter="friend">Friend</button>
+        </div>
+    </div>
+
+    <div class="grid" id="profiles-grid"></div>
+    <div class="empty-state" id="empty-state" style="display: none;">No profiles match your search.</div>
+
+    <script>
+        const SUPABASE_URL = 'https://osidyfibmwsktfoqjsdi.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_QQXGFi2pk743FpoD1D5AlA_X-ZRGoXT';
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        const BADGE_META = {
+            owner: { label: 'Owner', cls: 'badge-owner' },
+            staff: { label: 'Staff', cls: 'badge-staff' },
+            beta: { label: 'Beta Tester', cls: 'badge-beta' },
+            verified: { label: 'Verified', cls: 'badge-verified' },
+            friend: { label: 'Friend', cls: 'badge-friend' }
+        };
+
+        let allProfiles = [];
+        let activeBadgeFilter = 'all';
+
+        function escapeHtml(str) {
+            return String(str ?? '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
+        }
+
+        async function checkSiteShutdown() {
+            const { data } = await supabaseClient
+                .from('site_config')
+                .select('is_shutdown, shutdown_message')
+                .eq('id', 1)
+                .maybeSingle();
+
+            if (data && data.is_shutdown) {
+                document.body.innerHTML =
+                    '<div style="max-width:520px;margin:100px auto;padding:32px;background:#24242b;color:#fff;border-radius:12px;text-align:center;font-family:sans-serif;">' +
+                    '<h1>Website Offline</h1>' +
+                    '<p style="color:#ccc;">' + escapeHtml(data.shutdown_message || 'The site is temporarily offline for maintenance.') + '</p>' +
+                    '<a href="dashboard.html" style="display:inline-block;margin-top:16px;padding:10px 16px;background:#5865F2;color:#fff;text-decoration:none;border-radius:8px;">Staff Dashboard</a>' +
+                    '</div>';
+                return true;
+            }
+            return false;
+        }
+
+        function getProfileUrl(username) {
+            return 'portfolio.html?u=' + encodeURIComponent(username);
+        }
+
+        function renderBadges(badges) {
+            if (!Array.isArray(badges) || badges.length === 0) return '';
+            return '<div class="badges-row">' + badges.map(function (raw) {
+                const key = String(raw).trim().toLowerCase();
+                const meta = BADGE_META[key] || { label: escapeHtml(raw), cls: 'badge-default' };
+                return '<span class="badge ' + meta.cls + '">' + meta.label + '</span>';
+            }).join('') + '</div>';
+        }
+
+        function renderGrid() {
+            const query = document.getElementById('search-box').value.trim().toLowerCase();
+            const grid = document.getElementById('profiles-grid');
+            const empty = document.getElementById('empty-state');
+
+            const filtered = allProfiles.filter(function (p) {
+                if (!p.username) return false;
+                const badges = Array.isArray(p.badges) ? p.badges.map(function (b) { return b.toLowerCase(); }) : [];
+                if (activeBadgeFilter !== 'all' && !badges.includes(activeBadgeFilter)) return false;
+
+                if (!query) return true;
+                return p.username.toLowerCase().includes(query) ||
+                       (p.bio && p.bio.toLowerCase().includes(query));
+            });
+
+            if (filtered.length === 0) {
+                grid.innerHTML = '';
+                empty.style.display = 'block';
+                return;
+            }
+
+            empty.style.display = 'none';
+            grid.innerHTML = filtered.map(function (p) {
+                const isImageBg = p.background_url && p.background_type !== 'video';
+                const bannerStyle = isImageBg ? 'style="background-image: url(\'' + escapeHtml(p.background_url) + '\')"' : '';
+                const avatarHtml = p.avatar_url
+                    ? '<img class="card-avatar" src="' + escapeHtml(p.avatar_url) + '" alt="' + escapeHtml(p.username) + '">'
+                    : '<div class="card-avatar">' + escapeHtml(p.username.charAt(0).toUpperCase()) + '</div>';
+
+                return (
+                    '<a class="card" href="' + getProfileUrl(p.username) + '">' +
+                        '<div class="card-banner" ' + bannerStyle + '></div>' +
+                        '<div class="card-body">' +
+                            avatarHtml +
+                            '<div class="card-title">' + escapeHtml(p.username) + '</div>' +
+                            renderBadges(p.badges) +
+                            '<p class="card-bio">' + escapeHtml(p.bio || 'No bio yet.') + '</p>' +
+                        '</div>' +
+                    '</a>'
+                );
+            }).join('');
+        }
+
+        async function loadDirectory() {
+            if (await checkSiteShutdown()) return;
+
+            const { data, error } = await supabaseClient
+                .from('profiles')
+                .select('username, bio, avatar_url, background_url, background_type, badges, is_public')
+                .neq('is_public', false)
+                .order('username', { ascending: true });
+
+            if (error) {
+                document.getElementById('empty-state').textContent = 'Failed to load profiles.';
+                document.getElementById('empty-state').style.display = 'block';
+                return;
+            }
+
+            allProfiles = data || [];
+            renderGrid();
+        }
+
+        document.getElementById('search-box').addEventListener('input', renderGrid);
+
+        document.getElementById('filter-pills').addEventListener('click', function (e) {
+            const btn = e.target.closest('.pill');
+            if (!btn) return;
+            document.querySelectorAll('.pill').forEach(function (p) { p.classList.remove('active'); });
+            btn.classList.add('active');
+            activeBadgeFilter = btn.getAttribute('data-filter');
+            renderGrid();
+        });
+
+        loadDirectory();
+    </script>
+</body>
+</html>
