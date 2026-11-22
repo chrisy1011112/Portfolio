@@ -105,6 +105,22 @@
             background: rgba(255, 255, 255, 0.1);
         }
 
+        .pfp-text {
+            width: 110px;
+            height: 110px;
+            border-radius: 50%;
+            border: 3px solid rgba(255, 255, 255, 0.8);
+            margin: 0 auto 12px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            font-weight: bold;
+            color: white;
+            user-select: none;
+            box-sizing: border-box;
+        }
+
         .badges-row {
             display: flex;
             flex-wrap: wrap;
@@ -212,6 +228,14 @@
         const SUPABASE_KEY = 'sb_publishable_QQXGFi2pk743FpoD1D5AlA_X-ZRGoXT';
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+        const GRADIENT_CSS = {
+            midnight: 'linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #312e81 100%)',
+            sunset: 'linear-gradient(135deg, #451a03 0%, #9a3412 52%, #be123c 100%)',
+            emerald: 'linear-gradient(135deg, #022c22 0%, #065f46 55%, #0f766e 100%)',
+            cyber: 'linear-gradient(135deg, #1e1035 0%, #5b21b6 50%, #0284c7 100%)',
+            rose: 'linear-gradient(135deg, #271024 0%, #831843 52%, #4c1d95 100%)'
+        };
+
         const BADGE_META = {
             owner: { label: 'Owner', cls: 'badge-owner' },
             staff: { label: 'Staff', cls: 'badge-staff' },
@@ -233,6 +257,20 @@
                 .replace(/</g, '&lt;')
                 .replace(/>/g, '&gt;')
                 .replace(/"/g, '&quot;');
+        }
+
+        function renderPfpHtml(profile) {
+            const raw = String(profile.avatar_url || '');
+            if (profile.avatar_type === 'text' || raw.startsWith('text:')) {
+                const parts = raw.replace(/^text:/, '').split('|');
+                const colorHex = /^#[0-9a-fA-F]{6}$/.test(parts[0]) ? parts[0] : '#4a69bd';
+                const label = parts.slice(1).join('|').trim() || (profile.username || '?').slice(0, 2).toUpperCase();
+                return '<div class="pfp-text" style="background:' + escapeHtml(colorHex) + ';">' + escapeHtml(label) + '</div>';
+            }
+            if (raw) {
+                return '<img class="pfp" src="' + escapeHtml(raw) + '" alt="' + escapeHtml(profile.username || '') + '" onerror="this.style.display=\'none\'">';
+            }
+            return '';
         }
 
         function toEmbedMusicUrl(rawUrl) {
@@ -283,14 +321,25 @@
             return /\.(mp4|webm|ogg|mov)(\?|#|$)/i.test(url.trim());
         }
 
-        function applyAnimatedOrStaticBackground(url, bgType) {
-            if (!url) return;
-            const cleanUrl = sanitizeUrl(url);
-
+        function applyBackground(url, bgType) {
             const existingVideo = document.querySelector('.bg-video');
             if (existingVideo) existingVideo.remove();
             document.body.style.backgroundImage = '';
 
+            if (bgType === 'none' || !url) {
+                return;
+            }
+
+            const raw = String(url).trim();
+            if (bgType === 'gradient' || raw.startsWith('gradient:')) {
+                const key = raw.replace(/^gradient:/, '').toLowerCase();
+                if (GRADIENT_CSS[key]) {
+                    document.body.style.backgroundImage = GRADIENT_CSS[key];
+                }
+                return;
+            }
+
+            const cleanUrl = sanitizeUrl(raw);
             if (isVideoUrl(cleanUrl, bgType)) {
                 const video = document.createElement('video');
                 video.className = 'bg-video';
@@ -347,14 +396,10 @@
                 container.classList.add('vip-glow');
             }
 
-            applyAnimatedOrStaticBackground(data.background_url, data.background_type);
-
-            const pfpHtml = data.avatar_url
-                ? '<img class="pfp" src="' + escapeHtml(data.avatar_url) + '" alt="' + escapeHtml(data.username || '') + '" onerror="this.style.display=\'none\'">'
-                : '';
+            applyBackground(data.background_url, data.background_type);
 
             document.getElementById('section-bio').innerHTML =
-                pfpHtml +
+                renderPfpHtml(data) +
                 '<h1 style="margin-bottom: 4px;">' + escapeHtml(data.username || 'User') + '</h1>' +
                 renderBadges(data.badges) +
                 '<p>' + escapeHtml(data.bio || '') + '</p>';
