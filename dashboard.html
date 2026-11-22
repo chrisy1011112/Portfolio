@@ -111,6 +111,14 @@
             background: #f4f4f4;
             color: #111;
         }
+        input[type="color"] {
+            width: 56px;
+            height: 40px;
+            padding: 3px;
+            border-radius: 6px;
+            cursor: pointer;
+            background: #444;
+        }
         textarea.code-box {
             font-family: monospace;
             background: #18181b;
@@ -124,11 +132,41 @@
             color: white;
             padding: 8px;
         }
+        .mode-toggle {
+            display: inline-flex;
+            gap: 8px;
+            margin-top: 8px;
+        }
+        .mode-btn {
+            padding: 7px 14px;
+            border-radius: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            background: #27272e;
+            color: #ccc;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .mode-btn.active {
+            background: #4a69bd;
+            color: white;
+            border-color: #74b9ff;
+        }
+        .text-pfp-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 8px;
+        }
+        .text-pfp-controls input[type="text"] {
+            margin-top: 0;
+            flex: 1;
+        }
         .preview-row {
             display: flex;
             align-items: center;
             gap: 12px;
-            margin-top: 8px;
+            margin-top: 10px;
         }
         .pfp-preview {
             width: 60px;
@@ -137,6 +175,14 @@
             object-fit: cover;
             border: 2px solid #aaa;
             background: #222;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 20px;
+            color: white;
+            flex-shrink: 0;
+            overflow: hidden;
         }
         .bg-controls {
             display: flex;
@@ -331,13 +377,27 @@
             <span>List my profile in the public Explore directory</span>
         </label>
 
-        <label class="field-label" for="pfp-upload">
-            Profile Picture (PFP):
-            <span class="hint">Upload an image (JPG, PNG, GIF, WebP)</span>
-        </label>
-        <input type="file" id="pfp-upload" accept="image/*">
+        <span class="field-label">
+            Profile Picture (Image or Text):
+            <span class="hint">Upload an image or switch to Text to use initials, an emoji, or a short label</span>
+        </span>
+        <div class="mode-toggle">
+            <button type="button" class="mode-btn active" id="pfp-mode-image-btn">Image PFP</button>
+            <button type="button" class="mode-btn" id="pfp-mode-text-btn">Text PFP</button>
+        </div>
+
+        <div id="pfp-image-controls" style="margin-top: 8px;">
+            <input type="file" id="pfp-upload" accept="image/*">
+        </div>
+
+        <div id="pfp-text-controls" class="text-pfp-controls" style="display: none;">
+            <input type="text" id="pfp-text-input" maxlength="6" placeholder="e.g. JD or ★">
+            <input type="color" id="pfp-text-color" value="#4a69bd" title="PFP circle color">
+        </div>
+
         <div class="preview-row" id="pfp-preview-wrap" style="display: none;">
-            <img id="pfp-preview" class="pfp-preview" src="" alt="PFP Preview">
+            <img id="pfp-preview-img" class="pfp-preview" src="" alt="PFP Preview" style="display: none;">
+            <div id="pfp-preview-text" class="pfp-preview" style="display: none;"></div>
             <span style="font-size: 13px; color: #ccc;">Current / selected PFP</span>
         </div>
 
@@ -423,6 +483,8 @@
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         let currentUser = null;
         let userBadges = [];
+        let savedAvatarUrl = null;
+        let pfpMode = 'image'; // 'image' | 'text'
 
         const GRADIENT_PRESETS = {
             midnight: {
@@ -448,7 +510,7 @@
         };
 
         let selectedBgChoice = {
-            mode: 'none', // 'none' | 'gradient' | 'custom'
+            mode: 'none',
             value: null,
             type: null
         };
@@ -468,6 +530,62 @@
             verified: 'badge-verified',
             friend: 'badge-friend'
         };
+
+        function getFallbackPfpText() {
+            const custom = document.getElementById('pfp-text-input').value.trim();
+            if (custom) return custom;
+            const uname = document.getElementById('username').value.trim();
+            return uname ? uname.slice(0, 2).toUpperCase() : '?';
+        }
+
+        function updatePfpPreviewUI() {
+            const imgBtn = document.getElementById('pfp-mode-image-btn');
+            const textBtn = document.getElementById('pfp-mode-text-btn');
+            const imgControls = document.getElementById('pfp-image-controls');
+            const textControls = document.getElementById('pfp-text-controls');
+            const wrap = document.getElementById('pfp-preview-wrap');
+            const imgEl = document.getElementById('pfp-preview-img');
+            const textEl = document.getElementById('pfp-preview-text');
+
+            imgBtn.classList.toggle('active', pfpMode === 'image');
+            textBtn.classList.toggle('active', pfpMode === 'text');
+            imgControls.style.display = pfpMode === 'image' ? 'block' : 'none';
+            textControls.style.display = pfpMode === 'text' ? 'flex' : 'none';
+
+            if (pfpMode === 'text') {
+                const bg = document.getElementById('pfp-text-color').value || '#4a69bd';
+                textEl.style.background = bg;
+                textEl.textContent = getFallbackPfpText();
+                textEl.style.display = 'flex';
+                imgEl.style.display = 'none';
+                wrap.style.display = 'flex';
+            } else {
+                textEl.style.display = 'none';
+                const file = document.getElementById('pfp-upload').files[0];
+                const src = file ? URL.createObjectURL(file) : savedAvatarUrl;
+                if (src) {
+                    imgEl.src = src;
+                    imgEl.style.display = 'block';
+                    wrap.style.display = 'flex';
+                } else {
+                    imgEl.style.display = 'none';
+                    wrap.style.display = 'none';
+                }
+            }
+        }
+
+        document.getElementById('pfp-mode-image-btn').addEventListener('click', function () {
+            pfpMode = 'image';
+            updatePfpPreviewUI();
+        });
+
+        document.getElementById('pfp-mode-text-btn').addEventListener('click', function () {
+            pfpMode = 'text';
+            updatePfpPreviewUI();
+        });
+
+        document.getElementById('pfp-text-input').addEventListener('input', updatePfpPreviewUI);
+        document.getElementById('pfp-text-color').addEventListener('input', updatePfpPreviewUI);
 
         function updateBackgroundButtonsUI() {
             const buttons = document.querySelectorAll('#bg-controls .bg-preset-btn');
@@ -717,15 +835,13 @@
 
         document.getElementById('username').addEventListener('input', function (e) {
             updatePortfolioLink(e.target.value.trim());
+            if (pfpMode === 'text' && !document.getElementById('pfp-text-input').value.trim()) {
+                updatePfpPreviewUI();
+            }
         });
 
-        document.getElementById('pfp-upload').addEventListener('change', function (e) {
-            const file = e.target.files[0];
-            if (!file) return;
-            const previewWrap = document.getElementById('pfp-preview-wrap');
-            const previewImg = document.getElementById('pfp-preview');
-            previewImg.src = URL.createObjectURL(file);
-            previewWrap.style.display = 'flex';
+        document.getElementById('pfp-upload').addEventListener('change', function () {
+            updatePfpPreviewUI();
         });
 
         function applyTagUI(badges) {
@@ -821,10 +937,19 @@
 
                 applyTagUI(data.badges);
 
-                if (data.avatar_url) {
-                    document.getElementById('pfp-preview').src = data.avatar_url;
-                    document.getElementById('pfp-preview-wrap').style.display = 'flex';
+                const rawAvatar = String(data.avatar_url || '');
+                if (data.avatar_type === 'text' || rawAvatar.startsWith('text:')) {
+                    pfpMode = 'text';
+                    const parts = rawAvatar.replace(/^text:/, '').split('|');
+                    const colorHex = /^#[0-9a-fA-F]{6}$/.test(parts[0]) ? parts[0] : '#4a69bd';
+                    const textVal = parts.slice(1).join('|') || (data.username || '?').slice(0, 2).toUpperCase();
+                    document.getElementById('pfp-text-color').value = colorHex;
+                    document.getElementById('pfp-text-input').value = textVal;
+                } else {
+                    pfpMode = 'image';
+                    savedAvatarUrl = rawAvatar || null;
                 }
+                updatePfpPreviewUI();
 
                 const linksContainer = document.getElementById('links-container');
                 linksContainer.innerHTML = '';
@@ -841,6 +966,7 @@
                 applyTagUI([]);
                 addLinkRow('', '');
                 renderSectionLists(ALL_SECTION_IDS);
+                updatePfpPreviewUI();
             }
         }
 
@@ -869,7 +995,8 @@
             const bgFile = document.getElementById('bg-upload').files[0];
             const musicFile = document.getElementById('music-upload').files[0];
 
-            let avatarUrl = null;
+            let avatarUrl = savedAvatarUrl;
+            let avatarType = pfpMode;
             let bgUrl = null;
             let bgType = null;
 
@@ -879,7 +1006,12 @@
                 return alert('Please enter a username.');
             }
 
-            if (pfpFile) {
+            if (pfpMode === 'text') {
+                const textVal = getFallbackPfpText();
+                const colorHex = document.getElementById('pfp-text-color').value || '#4a69bd';
+                avatarUrl = 'text:' + colorHex + '|' + textVal;
+                avatarType = 'text';
+            } else if (pfpFile) {
                 if (!pfpFile.type.startsWith('image/')) {
                     saveBtn.disabled = false;
                     return alert('Please select a valid image file for your profile picture.');
@@ -896,6 +1028,8 @@
                     return alert('PFP Upload failed: ' + error.message);
                 }
                 avatarUrl = supabaseClient.storage.from('avatars').getPublicUrl(filePath).data.publicUrl + '?t=' + Date.now();
+                savedAvatarUrl = avatarUrl;
+                avatarType = 'image';
             }
 
             if (bgFile) {
@@ -958,11 +1092,11 @@
                 layout_order: layoutOrder,
                 custom_html: customHtml,
                 vip_glow: vipGlow,
+                avatar_url: avatarUrl,
+                avatar_type: avatarType,
                 background_url: bgUrl,
                 background_type: bgType
             };
-
-            if (avatarUrl) updates.avatar_url = avatarUrl;
 
             const { error } = await supabaseClient.from('profiles').upsert(updates);
             saveBtn.disabled = false;
