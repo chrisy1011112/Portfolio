@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -137,6 +137,40 @@
             object-fit: cover;
             border: 2px solid #aaa;
             background: #222;
+        }
+        .bg-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        .bg-preset-btn {
+            padding: 8px 12px;
+            border-radius: 7px;
+            border: 2px solid rgba(255, 255, 255, 0.16);
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.75);
+            transition: transform 0.12s ease, border-color 0.15s ease;
+        }
+        .bg-preset-btn:hover {
+            transform: translateY(-1px);
+        }
+        .bg-preset-btn.active {
+            border-color: #74b9ff;
+            box-shadow: 0 0 0 2px rgba(116, 185, 255, 0.35);
+        }
+        .bg-none-btn {
+            background: #22252e;
+            color: #e2e8f0;
+            text-shadow: none;
+        }
+        .bg-mode-badge {
+            margin-top: 8px;
+            font-size: 12px;
+            color: #cbd5e1;
         }
         .link-row {
             display: flex;
@@ -327,9 +361,13 @@
         <button type="button" class="btn-small" id="add-link-btn">+ Add Link</button>
 
         <label class="field-label" for="bg-upload">
-            Upload Background (Image, GIF, or Video):
-            <span class="hint">Supports JPG, PNG, GIF, WebP, MP4, WebM, OGG</span>
+            Background (No Background, Gradient Preset, or Upload):
+            <span class="hint">Choose "No Background", pick a premade gradient, or upload an image/GIF/video</span>
         </label>
+        <div class="bg-controls" id="bg-controls">
+            <button type="button" class="bg-preset-btn bg-none-btn" data-bg-mode="none" id="no-bg-btn">No Background</button>
+        </div>
+        <div class="bg-mode-badge" id="bg-mode-status">Current background: None</div>
         <input type="file" id="bg-upload" accept="image/*,video/mp4,video/webm,video/ogg">
 
         <label class="field-label" for="music">
@@ -386,6 +424,35 @@
         let currentUser = null;
         let userBadges = [];
 
+        const GRADIENT_PRESETS = {
+            midnight: {
+                label: 'Midnight Indigo',
+                css: 'linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #312e81 100%)'
+            },
+            sunset: {
+                label: 'Sunset Ember',
+                css: 'linear-gradient(135deg, #451a03 0%, #9a3412 52%, #be123c 100%)'
+            },
+            emerald: {
+                label: 'Emerald Night',
+                css: 'linear-gradient(135deg, #022c22 0%, #065f46 55%, #0f766e 100%)'
+            },
+            cyber: {
+                label: 'Cyber Violet',
+                css: 'linear-gradient(135deg, #1e1035 0%, #5b21b6 50%, #0284c7 100%)'
+            },
+            rose: {
+                label: 'Velvet Rose',
+                css: 'linear-gradient(135deg, #271024 0%, #831843 52%, #4c1d95 100%)'
+            }
+        };
+
+        let selectedBgChoice = {
+            mode: 'none', // 'none' | 'gradient' | 'custom'
+            value: null,
+            type: null
+        };
+
         const SECTION_LABELS = {
             bio: 'Bio & PFP Section',
             links: 'Discord & Links Section',
@@ -401,6 +468,74 @@
             verified: 'badge-verified',
             friend: 'badge-friend'
         };
+
+        function updateBackgroundButtonsUI() {
+            const buttons = document.querySelectorAll('#bg-controls .bg-preset-btn');
+            buttons.forEach(function (btn) {
+                const mode = btn.getAttribute('data-bg-mode');
+                const key = btn.getAttribute('data-gradient-key');
+                const isActive =
+                    (mode === 'none' && selectedBgChoice.mode === 'none') ||
+                    (mode === 'gradient' && selectedBgChoice.mode === 'gradient' && selectedBgChoice.value === 'gradient:' + key);
+                btn.classList.toggle('active', Boolean(isActive));
+            });
+
+            const statusEl = document.getElementById('bg-mode-status');
+            if (selectedBgChoice.mode === 'none') {
+                statusEl.textContent = 'Current background: None (plain dark background)';
+            } else if (selectedBgChoice.mode === 'gradient') {
+                const key = String(selectedBgChoice.value || '').replace(/^gradient:/, '');
+                const presetName = (GRADIENT_PRESETS[key] && GRADIENT_PRESETS[key].label) || key;
+                statusEl.textContent = 'Current background: Gradient — ' + presetName;
+            } else {
+                statusEl.textContent = 'Current background: Custom ' + (selectedBgChoice.type || 'media');
+            }
+        }
+
+        function initBackgroundControls() {
+            const controls = document.getElementById('bg-controls');
+            const noBgBtn = document.getElementById('no-bg-btn');
+
+            noBgBtn.addEventListener('click', function () {
+                document.getElementById('bg-upload').value = '';
+                selectedBgChoice = { mode: 'none', value: null, type: 'none' };
+                updateBackgroundButtonsUI();
+            });
+
+            Object.keys(GRADIENT_PRESETS).forEach(function (key) {
+                const preset = GRADIENT_PRESETS[key];
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'bg-preset-btn';
+                btn.setAttribute('data-bg-mode', 'gradient');
+                btn.setAttribute('data-gradient-key', key);
+                btn.style.background = preset.css;
+                btn.textContent = preset.label;
+                btn.addEventListener('click', function () {
+                    document.getElementById('bg-upload').value = '';
+                    selectedBgChoice = {
+                        mode: 'gradient',
+                        value: 'gradient:' + key,
+                        type: 'gradient'
+                    };
+                    updateBackgroundButtonsUI();
+                });
+                controls.appendChild(btn);
+            });
+
+            document.getElementById('bg-upload').addEventListener('change', function (e) {
+                const file = e.target.files[0];
+                if (!file) return;
+                selectedBgChoice = {
+                    mode: 'custom',
+                    value: null,
+                    type: file.type.startsWith('video/') ? 'video' : 'image'
+                };
+                updateBackgroundButtonsUI();
+            });
+
+            updateBackgroundButtonsUI();
+        }
 
         new Sortable(document.getElementById('sortable-list'), {
             animation: 150,
@@ -663,6 +798,27 @@
                 document.getElementById('custom-html-code').value = data.custom_html || '';
                 document.getElementById('vip-glow').checked = Boolean(data.vip_glow);
 
+                if (data.background_type === 'gradient' || (data.background_url && String(data.background_url).startsWith('gradient:'))) {
+                    selectedBgChoice = {
+                        mode: 'gradient',
+                        value: data.background_url,
+                        type: 'gradient'
+                    };
+                } else if (data.background_url && data.background_type !== 'none') {
+                    selectedBgChoice = {
+                        mode: 'custom',
+                        value: data.background_url,
+                        type: data.background_type || 'image'
+                    };
+                } else {
+                    selectedBgChoice = {
+                        mode: 'none',
+                        value: null,
+                        type: 'none'
+                    };
+                }
+                updateBackgroundButtonsUI();
+
                 applyTagUI(data.badges);
 
                 if (data.avatar_url) {
@@ -762,6 +918,12 @@
                     return alert('Background Upload failed: ' + error.message);
                 }
                 bgUrl = supabaseClient.storage.from('backgrounds').getPublicUrl(filePath).data.publicUrl + '?t=' + Date.now();
+            } else if (selectedBgChoice.mode === 'gradient') {
+                bgUrl = selectedBgChoice.value;
+                bgType = 'gradient';
+            } else if (selectedBgChoice.mode === 'none') {
+                bgUrl = null;
+                bgType = 'none';
             }
 
             if (musicFile) {
@@ -795,14 +957,12 @@
                 music_url: music,
                 layout_order: layoutOrder,
                 custom_html: customHtml,
-                vip_glow: vipGlow
+                vip_glow: vipGlow,
+                background_url: bgUrl,
+                background_type: bgType
             };
 
             if (avatarUrl) updates.avatar_url = avatarUrl;
-            if (bgUrl) {
-                updates.background_url = bgUrl;
-                updates.background_type = bgType;
-            }
 
             const { error } = await supabaseClient.from('profiles').upsert(updates);
             saveBtn.disabled = false;
@@ -823,6 +983,7 @@
             window.location.href = 'index.html';
         });
 
+        initBackgroundControls();
         checkUser();
     </script>
 </body>
